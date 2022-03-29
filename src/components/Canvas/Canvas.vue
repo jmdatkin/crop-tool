@@ -47,10 +47,8 @@ const calculateDims = function (width, height) {
         newHeight = newWidth / imageRatio;
     } else {
         newHeight = workspaceHeight;
-        newWidth = newHeight / imageRatio;
+        newWidth = newHeight * imageRatio;
     }
-
-    console.log(newWidth);
 
     resize(newWidth, newHeight);
     // canv.value.getContext('2d').drawImage(im, 0, 0);
