@@ -6,9 +6,12 @@ import ProgressBar from "./ProgressBar.vue";
 import CanvasDataLayer from "./Canvas/CanvasDataLayer.vue";
 import EventBus from '../events';
 
+const loadedImage = new Image();
+
+const imageCurrentlyLoading = ref(false);
 const dragging = ref(false);
 const dataLoaded = ref(false);
-const canvas_dataURL = ref('');
+const canvasDataURL = ref('');
 const workspace = ref(null);
 
 const canvasDims = reactive({
@@ -29,10 +32,21 @@ const dropHandler = function (e: DragEvent) {
 
     if (e.dataTransfer.items) {
         let item = e.dataTransfer.items[0];
-
+        
         loadFile(item).then(url => {
-            dataLoaded.value = true;
-            canvas_dataURL.value = url;
+            loadedImage.src = url;
+            
+            loadedImage.decode().then(() => {
+                // imageCurrentlyLoading.value = false;
+                let [newWidth, newHeight] = calculateCanvasDims(loadedImage.naturalWidth, loadedImage.naturalHeight);
+                canvasDims.width = newWidth;
+                canvasDims.height = newHeight;
+                dataLoaded.value = true;
+                canvasDataURL.value = url;
+            }).catch(err => {
+                imageCurrentlyLoading.value = false;
+                throw Error(err);
+            });
         }).catch(err => console.error(err));
     }
 };
@@ -78,6 +92,13 @@ const calculateCanvasDims = function (width: number, height: number) {
 
     return [newWidth, newHeight];
 };
+
+window.onresize = function () {
+    let [newWidth, newHeight] = calculateCanvasDims(loadedImage.naturalWidth, loadedImage.naturalHeight);
+    canvasDims.width = newWidth;
+    canvasDims.height = newHeight;
+};
+
 </script>
 
 <template>
@@ -89,9 +110,10 @@ const calculateCanvasDims = function (width: number, height: number) {
             <div class="workspace" ref="workspace">
                 <CanvasDataLayer
                     v-if="dataLoaded"
-                    :dataURL="canvas_dataURL"
+                    :dataURL="canvasDataURL"
                     :canvas_width="canvasDims.width"
                     :canvas_height="canvasDims.height"
+                    :image="loadedImage"
                 ></CanvasDataLayer>
                 <div v-else class="canvas-placeholder">
                     <h2 :class="{ 'dragging': dragging }">Drag an image</h2>

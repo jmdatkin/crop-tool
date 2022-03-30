@@ -2,11 +2,11 @@
     <div ref="wrapper" class="canvas-wrapper">
         <canvas id="main-canv" ref="canv">
             <CanvasImage
-                :workspace="workspace"
                 :canv="canv"
                 :dataURL="props.dataURL"
                 :width="props.width"
                 :height="props.height"
+                :image="props.image"
             />
         </canvas>
     </div>
@@ -17,17 +17,14 @@ import CanvasImage from './CanvasImage.vue';
 
 
 const props = defineProps<{
-    width: Number,
-    height: Number,
-    dataURL: string
+    width: number,
+    height: number,
+    dataURL: string,
+    image: typeof Image
 }>();
 
-const dragging = ref(false);
-
 const dataLoaded = ref(false);
-// const dataURL = ref(props.dataURL);
 
-const offscreenCanvas = document.createElement('canvas');
 const canv = ref(null);
 const ctx = ref(null);
 const wrapper = ref(null);
@@ -43,15 +40,13 @@ const resize = function (width: number, height: number): void {
 }
 
 onUpdated(() => {
-    // ctx.value = canv.value.getContext('2d');
+    console.log('updated');
     resize(props.width, props.height);
-    // dataURL.value = props.dataURL;
 });
 
 onMounted(() => {
     ctx.value = canv.value.getContext('2d');
     resize(props.width, props.height);
-
 });
 
 provide('canvas-context', ctx);

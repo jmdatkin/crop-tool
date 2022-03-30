@@ -7,50 +7,59 @@ const ctx = inject('canvas-context');// as CanvasRenderingContext2D;
 
 const internalImage = new Image();
 
-const props = defineProps(['dataURL', 'canv', 'width', 'height']);
-defineEmits(['resize-wrapper-request']);
+const props = defineProps<{
+    dataURL: string,
+    canv: HTMLElement,
+    width: number,
+    height: number,
+    image: HTMLElement
+}>();
+// defineEmits(['resize-wrapper-request']);
 
-let width = 0, height = 0;
+// let width = 0, height = 0;
 
 const dataURL = ref(props.dataURL);
 const offscreenCanvas = document.createElement('canvas');
 
-window.onresize = function () {
-    EventBus.emit('resize-canvas-request', width, height);
-};
+// window.onresize = function () {
+//     EventBus.emit('resize-canvas-request', width, height);
+// };
 
 const draw = function () {
     window.requestAnimationFrame(() => {
-        let imageData = offscreenCanvas.getContext('2d')?.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
-        // canv.value.getContext('2d').imageSmoothingEnabled = false;
-        // ctx.drawImage(offscreenCanvas, 0, 0, offscreenCanvas.width, offscreenCanvas.height, 0, 0, canv.value.width, canv.value.height);
         ctx.value.drawImage(offscreenCanvas, 0, 0, offscreenCanvas.width, offscreenCanvas.height, 0, 0, props.width, props.height);
     });
 };
 
-const loadImage = function (): Promise<void> {
-    console.log('loading');
+/*const loadImage = function () {
     internalImage.src = props.dataURL;
-    return internalImage.decode().then(() => {
-        width = internalImage.naturalWidth;
-        height = internalImage.naturalHeight;
-
-        offscreenCanvas.width = width;
-        offscreenCanvas.height = height;
+    internalImage.decode().then(() => {
+        // width = internalImage.naturalWidth;
+        // height = internalImage.naturalHeight;
+        offscreenCanvas.width = internalImage.naturalWidth;
+        offscreenCanvas.height = internalImage.naturalHeight;
         offscreenCanvas.getContext('2d')?.drawImage(internalImage, 0, 0);
-        
-        EventBus.emit('resize-canvas-request', width, height);
+
+        // draw();
+        // EventBus.emit('resize-canvas-request', width, height);
         // draw();
         // nextTick().then(() => draw());
     }).catch(err => {
         console.error(err);
         console.log(props.dataURL);
     });
+};*/
+
+const loadImage = function() {
+    let im = props.image;
+    offscreenCanvas.width = im.naturalWidth;
+    offscreenCanvas.height = im.naturalHeight;
+    offscreenCanvas.getContext('2d')?.drawImage(im,0,0);
 };
 
 watch(dataURL, (newURL, oldURL) => {
-    if (newURL === oldURL) return;
-    console.log('changed');
+    // if (newURL === oldURL) return;
+    // console.log('changed');
     loadImage();
     // draw();
 
