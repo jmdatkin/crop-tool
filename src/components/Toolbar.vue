@@ -1,12 +1,39 @@
 <template>
     <div class="toolbar bg-gray-800">
-
+        <div class="toolbar-items">
+            <div class="toolbar-item">
+                <button>Button</button>
+            </div>
+        </div>
     </div>
 </template>
 
 <style lang="scss" scoped>
+@import '@/assets/variables.scss';
     .toolbar {
         width: 100%;
-        height: 50px;
+        height: $toolbar-height;
+        padding: 5px 0;
+    }
+
+    .toolbar-items {
+        display: flex;
+        flex-direction: row;
+        margin: 0 40px;
+        place-items: center;
+    }
+
+    button {
+        // color: #eee;
+        color:  rgb(55, 59, 73);
+        background-color: #eee;
+        font-weight: 600;
+        text-shadow: 1px 1px 0 rgb(167, 167, 167);
+        // border: solid 2px rgb(76, 86, 119);
+        padding: 2px 10px;
+        border-radius: 8px;
+        line-height: 200%;
+        // vertical-align: middle;
+    
     }
 </style>
