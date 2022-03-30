@@ -1,3 +1,5 @@
+import EventBus from "./events";
+
 const loadFile = function (file: DataTransferItem) {
     // if (file.type.indexOf('image') < 0 || file.kind !== 'file')
     //     return Promise.reject("Only images are allowed to be uploaded");
@@ -14,6 +16,12 @@ const loadImageFile = function (image: DataTransferItem): Promise<string> {
     let file = image.getAsFile();
 
     let p = new Promise<string>(function (resolve) {
+        fr.onprogress = (e) => {
+            EventBus.emit('image-load-progress', e.loaded/e.total);
+            console.log(e.loaded);
+            console.log(e.total);
+            console.log('progress');
+        }
         fr.onload = () => {
             resolve(fr.result as string)
         };
