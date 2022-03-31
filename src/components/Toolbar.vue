@@ -4,9 +4,22 @@
             <div class="toolbar-item">
                 <button>Button</button>
             </div>
+            <div class="toolbar-item">
+                <label for="image-smoothing-enabled">Image Smoothing Enabled</label>
+                <input @click="toggleImageSmoothing" type="checkbox" checked id="image-smoothing-enabled">
+            </div>
         </div>
     </div>
 </template>
+
+<script setup lang="ts">
+import EventBus from '../events';
+
+const toggleImageSmoothing = function(e) {
+    EventBus.emit('toggle-canvas.image-smoothing', e.target.checked);
+};
+
+</script>
 
 <style lang="scss" scoped>
 @import '@/assets/variables.scss';
