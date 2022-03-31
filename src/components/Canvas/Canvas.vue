@@ -1,6 +1,7 @@
 <template>
     <div ref="wrapper" class="canvas-wrapper">
-        <canvas id="main-canv" ref="canv"></canvas>
+        <canvas id="main-canv" ref="mainCanv"></canvas>
+        <canvas id="markup-canv" ref="markupCanv"></canvas>
     </div>
 </template>
 
@@ -11,113 +12,83 @@ import { nextTick, onMounted, onUpdated, reactive, ref, watch } from 'vue';
 const props = defineProps<{
     width: number,
     height: number,
-    draw: Function
+    drawImage: Function
+    drawSelectionRect: Function
+
+    selX: number,
+    selY: number,
+    selW: number,
+    selH: number
 }>();
 
 const dragging = ref(false);
 
-const dataLoaded = ref(false);
-// const dataURL = ref(props.dataURL);
-// const loadedImageData = reactive({
-//     dataURL,
-//     width: 0,
-//     height: 0
-// });
+const marqueeOffset = ref(0);
 
-const canv = ref(null);
+const dataLoaded = ref(false);
+const markupCanv = ref(null);
+
+
+const mainCanv = ref(null);
 const wrapper = ref(null);
 
+let bb;
 
-const drawOnscreen = function () {
-    window.requestAnimationFrame(() => {
-        props.draw(canv.value);
-        // canv.value.getContext('2d').drawImage(offscreenCanvas, 0, 0, offscreenCanvas.width, offscreenCanvas.height, 0, 0, canv.value.width, canv.value.height);
-    });
+const drawImage = function () {
+    props.drawImage(mainCanv.value);
 };
+
+const drawSelectionRect = function () {
+    let ctx = markupCanv.value.getContext('2d');
+
+    ctx.setLineDash([5, 7]);
+    ctx.lineDashOffset = marqueeOffset.value;
+    ctx.imageSmoothingEnabled = false;
+
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(props.selX - bb.left, props.selY - bb.top, props.selW, props.selH);
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(props.selX - bb.left - 1, props.selY - bb.top - 1, props.selW, props.selH);
+    // ctx.strokeRect(props.selX - bb.left + 1, props.selY - bb.top + 1, props.selW, props.selH);
+
+    // window.requestAnimationFrame(() => {
+    //     props.drawSelectionRect(markupCanv.value);
+    // });
+}
 
 const resize = function (): void {
     let newWidth = Math.floor(props.width);
     let newHeight = Math.floor(props.height);
     wrapper.value.style.width = `${newWidth + 2}px`;     //Add 2 to account for border width
     wrapper.value.style.height = `${newHeight + 2}px`;
-    canv.value.width = newWidth;
-    canv.value.height = newHeight;
+    markupCanv.value.width = newWidth;
+    markupCanv.value.height = newHeight;
+    mainCanv.value.height = newHeight;
+    mainCanv.value.width = newWidth;
+
+    bb = wrapper.value.getBoundingClientRect();
 };
 
-/*watch(dataURL, (newURL, oldURL) => {
-    if (newURL === oldURL) return;  //Image hasn't changed
-    let im = new Image();
-    im.src = newURL;
-    im.decode().then(() => {
-        let c_w = im.naturalWidth;
-        let c_h = im.naturalHeight;
-
-        loadedImageData.width = c_w;
-        loadedImageData.height = c_h;
-
-        offscreenCanvas.width = c_w;
-        offscreenCanvas.height = c_h;
-
-        offscreenCanvas.getContext('2d')?.drawImage(im, 0, 0);
-
-        // resize(c_w, c_h);
-        nextTick(() => {
-            calculateDims(c_w, c_h);
-            drawOnscreen();
-
-        });
-        // wrapper.value.style.width = `${c_w}px`;
-        // wrapper.value.style.height = `${c_h}px`;
-        // canv.value.width = c_w;
-        // canv.value.height = c_h;
-
-        // canv.value.getContext('2d').drawImage(im, 0, 0);
-    });
-});*/
-
 onUpdated(() => {
-    resize();
-    drawOnscreen();
-    // dataURL.value = props.dataURL;
+    window.requestAnimationFrame(() => {
+        resize();
+        drawImage();
+        drawSelectionRect();
+    });
 });
 
+setInterval(() => marqueeOffset.value-=4, 750);
+
 onMounted(() => {
-    resize()
-    drawOnscreen();
-    /*
-    let im = new Image();
-    im.src = dataURL.value;
-    im.decode().then(() => {
-        let c_w = im.naturalWidth;
-        let c_h = im.naturalHeight;
+    markupCanv.value.getContext('2d').lineDashOffset = marqueeOffset.value;
 
-        loadedImageData.width = c_w;
-        loadedImageData.height = c_h;
-
-        offscreenCanvas.width = c_w;
-        offscreenCanvas.height = c_h;
-
-        offscreenCanvas.getContext('2d')?.drawImage(im, 0, 0);
-
-        // resize(c_w, c_h);
-        nextTick(() => {
-            calculateDims(c_w, c_h);
-            drawOnscreen();
-        });
-        // wrapper.value.style.width = `${c_w}px`;
-        // wrapper.value.style.height = `${c_h}px`;
-        // canv.value.width = c_w;
-        // canv.value.height = c_h;
-
-        // canv.value.getContext('2d').drawImage(im, 0, 0);
+    window.requestAnimationFrame(() => {
+        resize();
+        drawImage();
+        drawSelectionRect();
     });
-    // console.log(canv.value);
-    // wrapper.value.style.width = `${props.width}px`;
-    // wrapper.value.style.height = `${props.height}px`;
-
-
-    // canv.value.width = props.width;
-    // canv.value.height = props.height;*/
 });
 </script>
 
@@ -126,5 +97,9 @@ onMounted(() => {
     margin: 0 auto;
     border: solid 1px black;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+canvas {
+    position: absolute;
 }
 </style>
