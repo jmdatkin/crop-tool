@@ -1,5 +1,5 @@
 <template>
-    <div class="toolbar bg-gray-800">
+    <div ref="toolbar" class="toolbar bg-gray-800">
         <div class="toolbar-items">
             <div class="toolbar-item">
                 <button>Button</button>
@@ -13,7 +13,12 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import EventBus from '../events';
+
+const toolbar = ref(null);
+
+defineExpose({toolbar});
 
 const toggleImageSmoothing = function(e) {
     EventBus.emit('toggle-canvas.image-smoothing', e.target.checked);

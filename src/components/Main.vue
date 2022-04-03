@@ -20,8 +20,9 @@ const loadedImage = ref(new Image());
 const dragging = ref(false);
 const dataLoaded = ref(false);
 const canvasDataURL = ref('');
-const canvas = ref(null);
+const canvasRefs = ref(null);
 const canvasScaleFactor = ref(0);
+const contentWrapper = ref(null);
 
 const marqueeSelected = ref(false);
 
@@ -47,9 +48,13 @@ const canvasToOffscreenCoords = function (coords: BoundingBox) {
     let { left: c_left, top: c_top, width: c_width, height: c_height } = coords;
     // let canvasOffset = cumulativeOffset(canvas.value as HTMLCanvasElement);
     let canvasOffset = {
-        left: canvasDims.left,
-        top: canvasDims.top
+        left: canvasRefs.value.wrapper.offsetLeft,
+        top: canvasRefs.value.wrapper.offsetTop + contentWrapper.value.offsetTop
     };
+
+    // console.log(canvasRefs);
+
+    console.log(canvasOffset);
 
     let wRatio = canvasDims.width / offscreenCanvas.width;
     let hRatio = canvasDims.height / offscreenCanvas.height;
@@ -254,7 +259,7 @@ const mouseupHandler = function (e: MouseEvent) {
         <div class="settings-overlay">
             <!-- <SelectionSettingsTooltip></SelectionSettingsTooltip> -->
         </div>
-        <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler">
+        <div ref="contentWrapper" class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler">
             <Transition name="content-slide">
                 <div class="canvas-content-group" :class="{ 'content-slide': sidebarOpen }">
                     <div
@@ -273,7 +278,7 @@ const mouseupHandler = function (e: MouseEvent) {
                             :drawSelectionRect="canvasMarqueeCallback"
                             :key="count"
                             :marquee="marquee"
-                            ref="canvas"
+                            ref="canvasRefs"
                         ></Canvas>
                         <div v-else class="canvas-placeholder">
                             <h2 :class="{ 'dragging': dragging }">Drag an image</h2>

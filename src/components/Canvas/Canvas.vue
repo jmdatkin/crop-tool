@@ -32,7 +32,7 @@ const markupCanv = ref(null);
 const mainCanv = ref(null);
 const wrapper = ref(null);
 
-defineExpose({canvas: mainCanv});
+defineExpose({canvas: mainCanv, wrapper});
 
 let bb;
 
@@ -43,16 +43,20 @@ const drawImage = function () {
 const drawSelectionRect = function () {
     let ctx = markupCanv.value.getContext('2d');
 
-    ctx.setLineDash([5, 7]);
+    ctx.setLineDash([8, 5]);
     ctx.lineDashOffset = marqueeOffset.value;
-    ctx.imageSmoothingEnabled = false;
+    ctx.lineCap = 'round';
 
-    ctx.strokeStyle = "#333";
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.imageSmoothingEnabled = false;
     ctx.strokeRect(props.marquee.left - bb.left, props.marquee.top - bb.top, props.marquee.width, props.marquee.height);
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 1;
-    ctx.strokeRect(props.marquee.left - bb.left - 1, props.marquee.top - bb.top - 1, props.marquee.width, props.marquee.height);
+    ctx.imageSmoothingEnabled = false;
+    ctx.strokeRect(props.marquee.left - bb.left, props.marquee.top - bb.top, props.marquee.width, props.marquee.height);
+    ctx.strokeRect(props.marquee.left - bb.left, props.marquee.top - bb.top, props.marquee.width, props.marquee.height);
+    ctx.strokeRect(props.marquee.left - bb.left, props.marquee.top - bb.top, props.marquee.width, props.marquee.height);
 
     // window.requestAnimationFrame(() => {
     //     props.drawSelectionRect(markupCanv.value);
