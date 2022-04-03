@@ -257,32 +257,37 @@ const mouseupHandler = function (e: MouseEvent) {
         <div class="settings-overlay">
             <!-- <SelectionSettingsTooltip></SelectionSettingsTooltip> -->
         </div>
-        <div ref="contentWrapper" class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler">
+        <div
+            ref="contentWrapper"
+            class="content-wrapper"
+            @drop.prevent="dropHandler"
+            @dragover="dragHandler"
+        >
             <Transition name="content-slide">
-                <div class="canvas-content-group" :class="{ 'content-slide': sidebarOpen }">
-                    <div
-                        @mousedown="mousedownHandler"
-                        @mouseup="mouseupHandler"
-                        @mousemove="mousemoveHandler"
-                        class="workspace"
-                        :class="{ 'loaded': dataLoaded }"
-                        ref="workspace"
-                    >
-                        <Canvas
-                            v-if="dataLoaded"
-                            :width="canvasDims.width"
-                            :height="canvasDims.height"
-                            :drawImage="canvasImageCallback"
-                            :drawSelectionRect="canvasMarqueeCallback"
-                            :key="count"
-                            :marquee="marquee"
-                            ref="canvasRefs"
-                        ></Canvas>
-                        <div v-else class="canvas-placeholder">
-                            <h2 :class="{ 'dragging': dragging }">Drag an image</h2>
-                        </div>
+                <!-- <div class="canvas-content-group" :class="{ 'content-slide': sidebarOpen }"> -->
+                <div
+                    @mousedown="mousedownHandler"
+                    @mouseup="mouseupHandler"
+                    @mousemove="mousemoveHandler"
+                    class="workspace"
+                    :class="{ 'loaded': dataLoaded }"
+                    ref="workspace"
+                >
+                    <Canvas
+                        v-if="dataLoaded"
+                        :width="canvasDims.width"
+                        :height="canvasDims.height"
+                        :drawImage="canvasImageCallback"
+                        :drawSelectionRect="canvasMarqueeCallback"
+                        :key="count"
+                        :marquee="marquee"
+                        ref="canvasRefs"
+                    ></Canvas>
+                    <div v-else class="canvas-placeholder">
+                        <h2 :class="{ 'dragging': dragging }">Drag an image</h2>
                     </div>
                 </div>
+                <!-- </div> -->
             </Transition>
             <Transition name="sidebar-slide">
                 <Sidebar v-show="sidebarOpen">
@@ -291,8 +296,21 @@ const mouseupHandler = function (e: MouseEvent) {
                         :marquee="marquee"
                         :draw="cropPreviewCallback"
                     />
-                    <label for="max">Marquee X</label>
-                    <input type="text" id="mx" />
+
+                    <!-- <div class="input-group">
+                        <label class="block" for="max">Marquee X</label>
+                        <input
+                            class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            type="text"
+                            id="mx"
+                        />
+                        <label for="max">Marquee X</label>
+                        <input
+                            class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            type="text"
+                            id="mx"
+                        />
+                    </div>-->
                 </Sidebar>
             </Transition>
         </div>
@@ -310,6 +328,11 @@ const mouseupHandler = function (e: MouseEvent) {
     justify-content: space-between;
     z-index: 3;
     pointer-events: none;
+}
+
+.input-group {
+    display: flex;
+    width: 100%;
 }
 
 .settings-overlay * {
@@ -339,7 +362,7 @@ const mouseupHandler = function (e: MouseEvent) {
 }
 .workspace {
     max-width: 1600px;
-    width: 100%;
+    width: calc(100% - $sidebar-width);
     height: 100%;
     margin: 0 auto;
 }

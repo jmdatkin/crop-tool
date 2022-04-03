@@ -110,11 +110,14 @@ onMounted(() => {
 <style scoped lang="scss">
 .crop-preview-container {
     // width: 100%;
-    width: 361px;
-    height: 193px;
+    // width: 241px;
+    // width: 100%;
+    // height: auto;
+    width: 241px;
+    height: 241px;
     // height: (9/16);
     background-color: #fff;
     border: solid 1px black;
-    margin: 10px auto;
+    margin: 0 auto;
 }
 </style>
