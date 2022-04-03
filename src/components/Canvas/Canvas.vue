@@ -40,23 +40,36 @@ const drawImage = function () {
     props.drawImage(mainCanv.value);
 };
 
+const clearSelectionRect = function() {
+    let ctx = markupCanv.value.getContext('2d');
+    ctx.clearRect(0,0,markupCanv.value.width, markupCanv.value.height);
+};
+
 const drawSelectionRect = function () {
     let ctx = markupCanv.value.getContext('2d');
 
     ctx.setLineDash([8, 5]);
     ctx.lineDashOffset = marqueeOffset.value;
     ctx.lineCap = 'round';
+    ctx.imageSmoothingEnabled = false;
 
-    ctx.strokeStyle = "#000";
+    //Shadow
+    ctx.strokeStyle = "#777";
+    ctx.lineWidth = 4;
+    ctx.imageSmoothingEnabled = false;
+    ctx.strokeRect(props.marquee.left - bb.left, props.marquee.top - bb.top, props.marquee.width, props.marquee.height);
+
+    ctx.strokeStyle = "#555";
+    ctx.lineWidth = 3;
+    ctx.imageSmoothingEnabled = false;
+    ctx.strokeRect(props.marquee.left - bb.left, props.marquee.top - bb.top, props.marquee.width, props.marquee.height);
+
+    ctx.strokeStyle = "#fff";
     ctx.lineWidth = 2;
     ctx.imageSmoothingEnabled = false;
     ctx.strokeRect(props.marquee.left - bb.left, props.marquee.top - bb.top, props.marquee.width, props.marquee.height);
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 1;
-    ctx.imageSmoothingEnabled = false;
-    ctx.strokeRect(props.marquee.left - bb.left, props.marquee.top - bb.top, props.marquee.width, props.marquee.height);
-    ctx.strokeRect(props.marquee.left - bb.left, props.marquee.top - bb.top, props.marquee.width, props.marquee.height);
-    ctx.strokeRect(props.marquee.left - bb.left, props.marquee.top - bb.top, props.marquee.width, props.marquee.height);
+    // ctx.strokeRect(props.marquee.left - bb.left, props.marquee.top - bb.top, props.marquee.width, props.marquee.height);
+    // ctx.strokeRect(props.marquee.left - bb.left, props.marquee.top - bb.top, props.marquee.width, props.marquee.height);
 
     // window.requestAnimationFrame(() => {
     //     props.drawSelectionRect(markupCanv.value);
@@ -92,7 +105,11 @@ onUpdated(() => {
     });
 });
 
-setInterval(() => marqueeOffset.value-=4, 750);
+setInterval(() => {
+    marqueeOffset.value-=4;
+    clearSelectionRect();
+    drawSelectionRect();
+}, 750);
 
 onMounted(() => {
     markupCanv.value.getContext('2d').lineDashOffset = marqueeOffset.value;

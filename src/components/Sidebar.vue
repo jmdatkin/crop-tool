@@ -12,7 +12,8 @@
 @import "@/assets/variables.scss";
 .sidebar {
     height: 100%;
-    width: $sidebar-width;
+    // width: $sidebar-width;
+    flex-basis: $sidebar-width;
     display: flex;
     flex-direction: column;
     padding: 10px 20px;

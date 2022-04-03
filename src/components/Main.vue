@@ -52,10 +52,6 @@ const canvasToOffscreenCoords = function (coords: BoundingBox) {
         top: canvasRefs.value.wrapper.offsetTop + contentWrapper.value.offsetTop
     };
 
-    // console.log(canvasRefs);
-
-    console.log(canvasOffset);
-
     let wRatio = canvasDims.width / offscreenCanvas.width;
     let hRatio = canvasDims.height / offscreenCanvas.height;
     let scaleFactor = canvasScaleFactor.value;
@@ -84,6 +80,8 @@ const cropPreviewCallback = function (canv: HTMLCanvasElement, previewDims: Boun
     // let dest_w = marquee.width * (canv.width / canvasDims.width);
     // let dest_h = marquee.height * (canv.height / canvasDims.height);
     let ctx = canv.getContext('2d');
+
+    ctx.imageSmoothingEnabled = false;
 
     ctx.fillStyle = "black";
     // ctx?.fillRect(0, 0, canv.width, canv.height);
@@ -170,7 +168,7 @@ const dropHandler = function (e: DragEvent) {
                 resizeCanvas();
                 dataLoaded.value = true;
 
-                // count.value++;
+                count.value++;
             };
 
 

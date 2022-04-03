@@ -29,12 +29,10 @@ const props = defineProps<{
 // };
 
 const checkers = function () {
-    let size = 7;
+    let size = 10;
     ctx.value.fillStyle = "white";
 
     let { width, height } = cropPreview.value;
-
-    console.log(width);
 
     ctx.value.fillRect(0, 0, width, height);
 
