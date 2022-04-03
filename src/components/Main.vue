@@ -7,6 +7,8 @@ import { Tools } from "@/constants";
 import SelectionSettingsTooltip from "./SelectionSettingsTooltip.vue";
 import Sidebar from "./Sidebar.vue";
 import CropPreview from "./CropPreview.vue";
+import { cumulativeOffset } from "../util";
+import type BoundingBox from '../../types/bounding-box';
 
 const selectedTool = ref(Tools.SELECT);
 
@@ -18,19 +20,21 @@ const loadedImage = ref(new Image());
 const dragging = ref(false);
 const dataLoaded = ref(false);
 const canvasDataURL = ref('');
+const canvas = ref(null);
+const canvasScaleFactor = ref(0);
 
 const marqueeSelected = ref(false);
 
 const sidebarOpen = ref(false);
 
-const canvasDims = reactive({
+const canvasDims: BoundingBox = reactive({
     left: 0,
     top: 0,
     width: 0,
     height: 0
 });
 
-const marquee = reactive({
+const marquee: BoundingBox = reactive({
     left: 0,
     top: 0,
     width: 0,
@@ -39,17 +43,46 @@ const marquee = reactive({
 
 provide('offscreen-canvas', offscreenCanvas);
 
-const cropPreviewCallback = function (canv: HTMLCanvasElement) {
-    let ox = (marquee.left - canvasDims.left) * (offscreenCanvas.width / canvasDims.width);
-    let oy = (marquee.top - canvasDims.top) * (offscreenCanvas.height / canvasDims.height);
+const canvasToOffscreenCoords = function (coords: BoundingBox) {
+    let { left: c_left, top: c_top, width: c_width, height: c_height } = coords;
+    // let canvasOffset = cumulativeOffset(canvas.value as HTMLCanvasElement);
+    let canvasOffset = {
+        left: canvasDims.left,
+        top: canvasDims.top
+    };
 
-    let ow = marquee.width * (offscreenCanvas.width / canvasDims.width);
-    let oh = marquee.height * (offscreenCanvas.height / canvasDims.height);
+    let wRatio = canvasDims.width / offscreenCanvas.width;
+    let hRatio = canvasDims.height / offscreenCanvas.height;
+    let scaleFactor = canvasScaleFactor.value;
 
-    let dest_w = marquee.width * (canv.width / canvasDims.width);
-    let dest_h = marquee.height * (canv.height / canvasDims.height);
+    return {
+        left: (c_left - canvasOffset.left) / scaleFactor,
+        top: (c_top - canvasOffset.top) / scaleFactor,
+        width: c_width / scaleFactor,
+        height: c_height / scaleFactor
+    };
+};
 
-    canv.getContext('2d')?.drawImage(offscreenCanvas, ox, oy, ow, oh, 0, 0, canv.width, canv.height);//dest_w, dest_h)
+// const cropPreviewCallback = function (canv: HTMLCanvasElement, p_width: number, p_height: number) {
+const cropPreviewCallback = function (canv: HTMLCanvasElement, previewDims: BoundingBox) {
+    let offscreenCoords = canvasToOffscreenCoords(marquee);
+
+    let { left: o_left, top: o_top, width: o_width, height: o_height } = offscreenCoords;
+    let { left: p_left, top: p_top, width: p_width, height: p_height } = previewDims;
+
+    // let ox = (marquee.left - canvasDims.left) * (offscreenCanvas.width / canvasDims.width);
+    // let oy = (marquee.top - canvasDims.top) * (offscreenCanvas.height / canvasDims.height);
+
+    // let ow = marquee.width * (offscreenCanvas.width / canvasDims.width);
+    // let oh = marquee.height * (offscreenCanvas.height / canvasDims.height);
+
+    // let dest_w = marquee.width * (canv.width / canvasDims.width);
+    // let dest_h = marquee.height * (canv.height / canvasDims.height);
+    let ctx = canv.getContext('2d');
+
+    ctx.fillStyle = "black";
+    // ctx?.fillRect(0, 0, canv.width, canv.height);
+    ctx.drawImage(offscreenCanvas, o_left, o_top, o_width, o_height, p_left, p_top, p_width, p_height);//dest_w, dest_h)
 }
 
 const canvasImageCallback = function (canv: HTMLCanvasElement) {
@@ -98,11 +131,13 @@ const calculateCanvasDims = function (width: number, height: number) {
     if (ratioDifference > 0) {
         newWidth = workspaceWidth;
         newHeight = newWidth / imageRatio;
+        canvasScaleFactor.value = newWidth / loadedImage.value.naturalWidth;
     }
     //Portrait orientation
     else {
         newHeight = workspaceHeight;
         newWidth = newHeight * imageRatio;
+        canvasScaleFactor.value = newHeight / loadedImage.value.naturalHeight;
     }
 
     return [newWidth, newHeight, workspaceBb.left, workspaceBb.top];
@@ -130,7 +165,7 @@ const dropHandler = function (e: DragEvent) {
                 resizeCanvas();
                 dataLoaded.value = true;
 
-                count.value++;
+                // count.value++;
             };
 
 
@@ -141,8 +176,6 @@ const dropHandler = function (e: DragEvent) {
 
 const resizeCanvas = function () {
     let [newWidth, newHeight, left, top] = calculateCanvasDims(loadedImage.value.naturalWidth, loadedImage.value.naturalHeight);
-
-    console.log(`${newWidth}, ${newHeight}`);
 
     canvasDims.left = left;
     canvasDims.top = top;
@@ -184,6 +217,7 @@ const mousemoveHandler = function (e: MouseEvent) {
 
             dx = qx - px;
             dy = qy - py;
+
 
             marquee.left = px;
             marquee.top = py;
@@ -239,6 +273,7 @@ const mouseupHandler = function (e: MouseEvent) {
                             :drawSelectionRect="canvasMarqueeCallback"
                             :key="count"
                             :marquee="marquee"
+                            ref="canvas"
                         ></Canvas>
                         <div v-else class="canvas-placeholder">
                             <h2 :class="{ 'dragging': dragging }">Drag an image</h2>

@@ -8,7 +8,6 @@
 <script setup lang="ts">import EventBus from '@/events';
 import { nextTick, onMounted, onUpdated, reactive, ref, watch } from 'vue';
 
-
 const props = defineProps<{
     width: number,
     height: number,
@@ -32,6 +31,8 @@ const markupCanv = ref(null);
 
 const mainCanv = ref(null);
 const wrapper = ref(null);
+
+defineExpose({canvas: mainCanv});
 
 let bb;
 
@@ -80,7 +81,6 @@ watch(props.marquee, () => {
 });
 
 onUpdated(() => {
-    console.log(props.marquee);
     window.requestAnimationFrame(() => {
         resize();
         drawImage();

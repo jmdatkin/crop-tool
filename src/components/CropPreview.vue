@@ -4,17 +4,21 @@
     </div>
 </template>
 
-<script setup lang="ts">import { inject, onMounted, ref } from 'vue';
+<script setup lang="ts">
+import { inject, onMounted, onUpdated, ref } from 'vue';
+import type BoundingBox from '../../types/bounding-box';
 
 const cropPreview = ref(null);
+const ctx = ref(null);
 const cropPreviewContainer = ref(null);
+let previewBb: DOMRect;
 
 const offscreenCanvas: HTMLCanvasElement = inject('offscreen-canvas');
 
 const props = defineProps<{
     draw: Function,
 
-    marquee: object
+    marquee: BoundingBox
 }>();
 
 // const draw = function() {
@@ -24,10 +28,40 @@ const props = defineProps<{
 //     cropPreview.value.getContext('2d').drawImage(offscreenCanvas, )
 // };
 
+const checkers = function () {
+    let size = 7;
+    ctx.value.fillStyle = "white";
+
+    let { width, height } = cropPreview.value;
+
+    console.log(width);
+
+    ctx.value.fillRect(0, 0, width, height);
+
+    ctx.value.fillStyle = "lightgrey";
+
+    // let i = 0, j = 0;
+
+    for (let j = 0; j * size < width; j++) {
+        for (let i = 0; i * size < height; i++) {
+            ctx.value.fillStyle = (i+j)%2==0 ? 'lightgray' : 'white';
+            ctx.value.fillRect(j * size, i * size, size, size);
+        }
+
+    }
+}
+
+
+const draw = function () {
+    checkers();
+    let dims = calculatePreviewDims() as BoundingBox;
+    props.draw(cropPreview.value, dims);//newWidth, newHeight);
+    // cropPreview.value.getContext('2d').drawImage(offscreenCanvas, 0, 0, newWidth, newHeight, offscreenCanvas, props.marquee.left, props.marquee.top, props.marquee.width, props.marquee.height );
+};
+
 const calculatePreviewDims = function () {
-    let previewBb: DOMRect = cropPreviewContainer.value.getBoundingClientRect();
-    let previewWidth = previewBb.width;
-    let previewHeight = previewBb.height;
+    let previewWidth = cropPreview.value.width;//previewBb.width;
+    let previewHeight = cropPreview.value.height;//previewBb.height;
 
     let previewRatio = previewWidth / previewHeight;
     let marqueeRatio = props.marquee.width / props.marquee.height;
@@ -36,33 +70,41 @@ const calculatePreviewDims = function () {
 
     let ratioDifference = marqueeRatio - previewRatio;
 
-    let newWidth, newHeight;
+    let newLeft, newTop, newWidth, newHeight;
 
     //Landscape orientation
     if (ratioDifference > 0) {
         newWidth = previewWidth;
         newHeight = newWidth / marqueeRatio;
+        newLeft = 0;
+        newTop = 0.5 * (previewHeight - newHeight);
     }
     //Portrait orientation
     else {
         newHeight = previewHeight;
         newWidth = newHeight * marqueeRatio;
+        newTop = 0;
+        newLeft = 0.5 * (previewWidth - newWidth);
     }
 
-    return [newWidth, newHeight, previewBb.left, previewBb.top];
+    return { left: newLeft, top: newTop, width: newWidth, height: newHeight };
 }
-onMounted(() => {
+onUpdated(() => {
     requestAnimationFrame(() => {
-        props.draw(cropPreview.value);
+        draw();
+        // props.draw(cropPreview.value);
     });
 });
 
 onMounted(() => {
+    previewBb = cropPreview.value.getBoundingClientRect();
+    ctx.value = cropPreview.value.getContext('2d');
     let style = getComputedStyle(cropPreviewContainer.value);
-    cropPreview.value.width = parseInt(style.width, 10);
-    cropPreview.value.height = parseInt(style.height, 10);
+    cropPreview.value.width = parseInt(style.width, 10) - 1;
+    cropPreview.value.height = parseInt(style.height, 10) - 1;
     requestAnimationFrame(() => {
-        props.draw(cropPreview.value);
+        draw();
+        // props.draw(cropPreview.value);
     });
 });
 </script>
@@ -70,8 +112,8 @@ onMounted(() => {
 <style scoped lang="scss">
 .crop-preview-container {
     // width: 100%;
-    width: 360px;
-    height: 192px;
+    width: 361px;
+    height: 193px;
     // height: (9/16);
     background-color: #fff;
     border: solid 1px black;
