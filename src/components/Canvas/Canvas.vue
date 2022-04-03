@@ -15,10 +15,11 @@ const props = defineProps<{
     drawImage: Function
     drawSelectionRect: Function
 
-    selX: number,
-    selY: number,
-    selW: number,
-    selH: number
+    marquee: object,
+    // marquee.left: number,
+    // marquee.top: number,
+    // marquee.width: number,
+    // marquee.height: number
 }>();
 
 const dragging = ref(false);
@@ -47,11 +48,10 @@ const drawSelectionRect = function () {
 
     ctx.strokeStyle = "#333";
     ctx.lineWidth = 3;
-    ctx.strokeRect(props.selX - bb.left, props.selY - bb.top, props.selW, props.selH);
+    ctx.strokeRect(props.marquee.left - bb.left, props.marquee.top - bb.top, props.marquee.width, props.marquee.height);
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 1;
-    ctx.strokeRect(props.selX - bb.left - 1, props.selY - bb.top - 1, props.selW, props.selH);
-    // ctx.strokeRect(props.selX - bb.left + 1, props.selY - bb.top + 1, props.selW, props.selH);
+    ctx.strokeRect(props.marquee.left - bb.left - 1, props.marquee.top - bb.top - 1, props.marquee.width, props.marquee.height);
 
     // window.requestAnimationFrame(() => {
     //     props.drawSelectionRect(markupCanv.value);
@@ -71,7 +71,16 @@ const resize = function (): void {
     bb = wrapper.value.getBoundingClientRect();
 };
 
+watch(props.marquee, () => {
+    window.requestAnimationFrame(() => {
+        resize();
+        drawImage();
+        drawSelectionRect();
+    });
+});
+
 onUpdated(() => {
+    console.log(props.marquee);
     window.requestAnimationFrame(() => {
         resize();
         drawImage();

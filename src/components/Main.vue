@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Canvas from "./Canvas/Canvas.vue";
 import { loadFile } from '../file-handler';
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, provide, reactive, ref } from "vue";
 import ProgressBar from "./ProgressBar.vue";
 import { Tools } from "@/constants";
 import SelectionSettingsTooltip from "./SelectionSettingsTooltip.vue";
@@ -31,24 +31,23 @@ const canvasDims = reactive({
 });
 
 const marquee = reactive({
-    x: 0,
-    y: 0,
-    w: 0,
-    h: 0
+    left: 0,
+    top: 0,
+    width: 0,
+    height: 0
 });
 
+provide('offscreen-canvas', offscreenCanvas);
+
 const cropPreviewCallback = function (canv: HTMLCanvasElement) {
-    console.log(canvasDims.left);
+    let ox = (marquee.left - canvasDims.left) * (offscreenCanvas.width / canvasDims.width);
+    let oy = (marquee.top - canvasDims.top) * (offscreenCanvas.height / canvasDims.height);
 
+    let ow = marquee.width * (offscreenCanvas.width / canvasDims.width);
+    let oh = marquee.height * (offscreenCanvas.height / canvasDims.height);
 
-    let ox = (marquee.x - canvasDims.left) * (offscreenCanvas.width / canvasDims.width);
-    let oy = (marquee.y - canvasDims.top) * (offscreenCanvas.height / canvasDims.height);
-
-    let ow = marquee.w * (offscreenCanvas.width / canvasDims.width);
-    let oh = marquee.h * (offscreenCanvas.height / canvasDims.height);
-
-    let dest_w = marquee.w * (canv.width / canvasDims.width);
-    let dest_h = marquee.h * (canv.height / canvasDims.height);
+    let dest_w = marquee.width * (canv.width / canvasDims.width);
+    let dest_h = marquee.height * (canv.height / canvasDims.height);
 
     canv.getContext('2d')?.drawImage(offscreenCanvas, ox, oy, ow, oh, 0, 0, canv.width, canv.height);//dest_w, dest_h)
 }
@@ -57,6 +56,17 @@ const canvasImageCallback = function (canv: HTMLCanvasElement) {
     // ctx.drawImage(offscreenCanvas, 0,0, offscreenCanvas.width, width, height)
     // console.log(offscreenCanvas.width);
     canv.getContext('2d').drawImage(offscreenCanvas, 0, 0, offscreenCanvas.width, offscreenCanvas.height, 0, 0, canv.width, canv.height);
+};
+
+const canvasOffset = function (obj) {
+    let { x, y } = obj;
+
+    let offsetLeft = workspace.value.offsetLeft;
+    let offsetTop = workspace.value.offsetTop;
+    return {
+        x: x - offsetLeft,
+        y: y - offsetTop
+    };
 };
 
 const canvasMarqueeCallback = function (canv: HTMLCanvasElement) {
@@ -132,6 +142,7 @@ const dropHandler = function (e: DragEvent) {
 const resizeCanvas = function () {
     let [newWidth, newHeight, left, top] = calculateCanvasDims(loadedImage.value.naturalWidth, loadedImage.value.naturalHeight);
 
+    console.log(`${newWidth}, ${newHeight}`);
 
     canvasDims.left = left;
     canvasDims.top = top;
@@ -155,7 +166,6 @@ let dy: number;
 let selDrag = false;
 const mousedownHandler = function (e: MouseEvent) {
     e.preventDefault();
-    console.log("HI");
     switch (selectedTool.value) {
         case Tools.SELECT:
             px = e.pageX;
@@ -175,10 +185,10 @@ const mousemoveHandler = function (e: MouseEvent) {
             dx = qx - px;
             dy = qy - py;
 
-            marquee.x = px;
-            marquee.y = py;
-            marquee.w = dx;
-            marquee.h = dy;
+            marquee.left = px;
+            marquee.top = py;
+            marquee.width = dx;
+            marquee.height = dy;
 
             updateCropPreview.value += 1;
     }
@@ -211,39 +221,42 @@ const mouseupHandler = function (e: MouseEvent) {
             <!-- <SelectionSettingsTooltip></SelectionSettingsTooltip> -->
         </div>
         <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler">
-            <div class="content-flex-group">
-                <div
-                    @mousedown="mousedownHandler"
-                    @mouseup="mouseupHandler"
-                    @mousemove="mousemoveHandler"
-                    class="workspace"
-                    :class="{ 'loaded': dataLoaded }"
-                    ref="workspace"
-                >
-                    <Canvas
-                        v-if="dataLoaded"
-                        :width="canvasDims.width"
-                        :height="canvasDims.height"
-                        :drawImage="canvasImageCallback"
-                        :drawSelectionRect="canvasMarqueeCallback"
-                        :key="count"
-                        :selX="marquee.x"
-                        :selY="marquee.y"
-                        :selW="marquee.w"
-                        :selH="marquee.h"
-                    ></Canvas>
-                    <div v-else class="canvas-placeholder">
-                        <h2 :class="{ 'dragging': dragging }">Drag an image</h2>
+            <Transition name="content-slide">
+                <div class="canvas-content-group" :class="{ 'content-slide': sidebarOpen }">
+                    <div
+                        @mousedown="mousedownHandler"
+                        @mouseup="mouseupHandler"
+                        @mousemove="mousemoveHandler"
+                        class="workspace"
+                        :class="{ 'loaded': dataLoaded }"
+                        ref="workspace"
+                    >
+                        <Canvas
+                            v-if="dataLoaded"
+                            :width="canvasDims.width"
+                            :height="canvasDims.height"
+                            :drawImage="canvasImageCallback"
+                            :drawSelectionRect="canvasMarqueeCallback"
+                            :key="count"
+                            :marquee="marquee"
+                        ></Canvas>
+                        <div v-else class="canvas-placeholder">
+                            <h2 :class="{ 'dragging': dragging }">Drag an image</h2>
+                        </div>
                     </div>
                 </div>
-                <Transition name="sidebar-slide">
-                    <Sidebar v-show="sidebarOpen">
-                        <CropPreview :key="updateCropPreview" :draw="cropPreviewCallback" />
-                        <label for="max">Marquee X</label>
-                        <input type="text" id="mx" />
-                    </Sidebar>
-                </Transition>
-            </div>
+            </Transition>
+            <Transition name="sidebar-slide">
+                <Sidebar v-show="sidebarOpen">
+                    <CropPreview
+                        :key="updateCropPreview"
+                        :marquee="marquee"
+                        :draw="cropPreviewCallback"
+                    />
+                    <label for="max">Marquee X</label>
+                    <input type="text" id="mx" />
+                </Sidebar>
+            </Transition>
         </div>
     </div>
 </template>
@@ -275,15 +288,16 @@ const mouseupHandler = function (e: MouseEvent) {
 }
 
 .content-wrapper {
-    width: 100%;
-    height: 100%;
-    // padding: 40px 0;
-}
-
-.content-flex-group {
     display: flex;
     flex-direction: row;
-    
+    width: 100%;
+    height: 100%;
+}
+
+.canvas-content-group {
+    padding: 40px 0;
+    flex-grow: 1;
+    position: relative;
 }
 .workspace {
     max-width: 1600px;
@@ -327,7 +341,20 @@ h2 {
         transform: scale(1.0045);
     }
 }
+.content-slide-enter-active,
+.content-slide-leave-active {
+    transition: right 0.15s ease-out;
+}
 
+.content-slide-enter-from,
+.content-slide-leave-to {
+    right: -1 * $sidebar-width;
+}
+
+.sidebar-slide-enter-to,
+.sidebar-slide-leave-from {
+    right: 0;
+}
 .sidebar-slide-enter-active,
 .sidebar-slide-leave-active {
     transition: right 0.15s ease-out;
