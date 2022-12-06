@@ -1,14 +1,26 @@
 <template>
     <div class="workspace" ref="workspace">
         <div ref="wrapper" class="canvas-wrapper">
-            <canvas id="main-canv" ref="canv"></canvas>
+            <ImageCanvas
+                :width="canvasDims.width"
+                :height="canvasDims.height"
+                :sourceImage="props.sourceImage"
+                :sourceImageWidth="props.sourceImageWidth"
+                :sourceImageHeight="props.sourceImageHeight"
+            ></ImageCanvas>
+            <OverlayCanvas
+                :width="canvasDims.width"
+                :height="canvasDims.height"
+            ></OverlayCanvas>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
 
-import { onMounted, onUpdated, ref } from 'vue';
+import { onMounted, onUpdated, reactive, ref } from 'vue';
+import ImageCanvas from './ImageCanvas.vue';
+import OverlayCanvas from './OverlayCanvas.vue';
 
 const props = defineProps<{
     sourceImage: HTMLImageElement | null,
@@ -19,6 +31,11 @@ const props = defineProps<{
 const canv = ref(null);
 const wrapper = ref(null);
 const workspace = ref(null);
+
+const canvasDims = reactive({
+    width: 0,
+    height: 0
+});
 
 const calculateDims = function (width, height) {
     let workspaceBb: DOMRect = workspace.value.getBoundingClientRect();
@@ -42,6 +59,8 @@ const calculateDims = function (width, height) {
         newWidth = newHeight * imageRatio;
     }
 
+    canvasDims.width = newWidth;
+    canvasDims.height = newHeight;
     resize(newWidth, newHeight);
 };
 
@@ -68,8 +87,8 @@ const resize = function (width: number, height: number): void {
     height = Math.floor(height);
     wrapper.value.style.width = `${width+2}px`;     //Add 2 to account for border width
     wrapper.value.style.height = `${height+2}px`;
-    canv.value.width = width;
-    canv.value.height = height;
+    // canv.value.width = width;
+    // canv.value.height = height;
 }
 
 onUpdated(() => {
@@ -88,7 +107,9 @@ onMounted(() => {
     margin: 0 auto;
     border: solid 1px black;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    position: relative;
 }
+
 .workspace {
     max-width: 1600px;
     width: 100%;

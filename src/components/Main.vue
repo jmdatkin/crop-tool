@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import Canvas from "./Canvas/Canvas.vue";
+import Canvas from "./Canvas/ImageCanvas.vue";
 import { loadFile } from '../file-handler';
 import { reactive, ref, type Ref } from "vue";
 import ProgressBar from "./ProgressBar.vue";
 import { computed } from "@vue/reactivity";
+import CanvasGroup from "./Canvas/CanvasGroup.vue";
 
 const dragging = ref(false);
 const dataLoaded = ref(false);
@@ -104,11 +105,11 @@ const mouseupHandler = function (e: MouseEvent) {
             @mousemove="mousemoveHandler"
             @mouseup="mouseupHandler"
             >
-            <Canvas v-if="dataLoaded" 
+            <CanvasGroup v-if="dataLoaded" 
                 :sourceImage="imageObject"
                 :sourceImageWidth="imageDims.width"
                 :sourceImageHeight="imageDims.height"
-            ></Canvas>
+            ></CanvasGroup>
             <div v-else class="canvas-placeholder">
                 <h2 :class="{ 'dragging': dragging }">Drag an image</h2>
             </div>
