@@ -6,8 +6,9 @@
     </div>
 </template>
 
-<script setup lang="ts">import { nextTick, onMounted, onUpdated, reactive, ref, watch } from 'vue';
+<script setup lang="ts">
 
+import { nextTick, onMounted, onUpdated, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
     // width: Number,
