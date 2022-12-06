@@ -11,6 +11,8 @@
             <OverlayCanvas
                 :width="canvasDims.width"
                 :height="canvasDims.height"
+                :mousePositionData="offsetMousePosition"
+                :dragging="props.dragging"
             ></OverlayCanvas>
         </div>
     </div>
@@ -18,6 +20,7 @@
 
 <script setup lang="ts">
 
+import { computed } from '@vue/reactivity';
 import { onMounted, onUpdated, reactive, ref } from 'vue';
 import ImageCanvas from './ImageCanvas.vue';
 import OverlayCanvas from './OverlayCanvas.vue';
@@ -25,16 +28,32 @@ import OverlayCanvas from './OverlayCanvas.vue';
 const props = defineProps<{
     sourceImage: HTMLImageElement | null,
     sourceImageWidth: Number,
-    sourceImageHeight: Number
+    sourceImageHeight: Number,
+    mousePositionData: object,
+    dragging: boolean
 }>();
 
-const canv = ref(null);
 const wrapper = ref(null);
 const workspace = ref(null);
+
+defineExpose({
+    wrapper
+});
 
 const canvasDims = reactive({
     width: 0,
     height: 0
+});
+
+const offsetMousePosition = computed(() => {
+    let {px, py, qx, qy} = props.mousePositionData;
+    let bb = wrapper.value.getBoundingClientRect();
+    return {
+        px: Math.min(Math.max(px,bb.x), bb.x+bb.width) - bb.left,
+        py: Math.min(Math.max(py,bb.y), bb.y+bb.height) - bb.top,
+        qx: Math.min(qx, bb.x+bb.width) - bb.left,
+        qy: Math.min(qy, bb.y+bb.height) - bb.top
+    };
 });
 
 const calculateDims = function (width, height) {
@@ -64,22 +83,8 @@ const calculateDims = function (width, height) {
     resize(newWidth, newHeight);
 };
 
-const drawOnscreen = function () {
-    window.requestAnimationFrame(() => {
-        canv.value.getContext('2d').drawImage(
-            props.sourceImage,
-            0, 0,
-            props.sourceImageWidth, props.sourceImageHeight,
-            0, 0,
-            canv.value.width, canv.value.height
-        );
-        
-    });
-}
-
 window.onresize = function () {
     calculateDims(props.sourceImageWidth, props.sourceImageHeight)
-    drawOnscreen();
 };
 
 const resize = function (width: number, height: number): void {
@@ -93,12 +98,10 @@ const resize = function (width: number, height: number): void {
 
 onUpdated(() => {
     calculateDims(props.sourceImageWidth, props.sourceImageHeight);
-    drawOnscreen();
 });
 
 onMounted(() => {
     calculateDims(props.sourceImageWidth, props.sourceImageHeight);
-    drawOnscreen();
 });
 </script>
 
@@ -108,6 +111,7 @@ onMounted(() => {
     border: solid 1px black;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
     position: relative;
+    cursor: crosshair;
 }
 
 .workspace {

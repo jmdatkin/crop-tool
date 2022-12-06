@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import Toolbar from './components/Toolbar.vue'
+import AppBar from './components/AppBar.vue'
 </script>
 
 <template>
-  <Toolbar></Toolbar>
+  <AppBar></AppBar>
   <div class="app-wrapper">
     <RouterView />
   </div>

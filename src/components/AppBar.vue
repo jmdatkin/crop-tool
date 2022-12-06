@@ -1,8 +1,8 @@
 <template>
-    <div class="toolbar bg-gray-800">
+    <div class="toolbar border-bottom">
         <div class="toolbar-items">
             <div class="toolbar-item">
-                <button>Button</button>
+                <!-- <button>Button</button> -->
             </div>
         </div>
     </div>
