@@ -8,25 +8,14 @@
 
 <script setup lang="ts">
 
-import { nextTick, onMounted, onUpdated, reactive, ref, watch } from 'vue';
+import { onMounted, onUpdated, ref } from 'vue';
 
 const props = defineProps<{
-    // width: Number,
-    // height: Number,
-    dataURL: string
+    sourceImage: HTMLImageElement | null,
+    sourceImageWidth: Number,
+    sourceImageHeight: Number
 }>();
 
-const dragging = ref(false);
-
-const dataLoaded = ref(false);
-const dataURL = ref(props.dataURL);
-const loadedImageData = reactive({
-    dataURL,
-    width: 0,
-    height: 0
-});
-
-const offscreenCanvas = document.createElement('canvas');
 const canv = ref(null);
 const wrapper = ref(null);
 const workspace = ref(null);
@@ -40,40 +29,37 @@ const calculateDims = function (width, height) {
     let imageRatio = width / height;
 
     let ratioDifference = imageRatio - workspaceRatio;
-    // let workspaceOrientation: ('landscape' | 'portrait') = workspaceWidth > workspaceHeight ? 'landscape' : 'portrait';
-    // let imageOrientation: ('landscape' | 'portrait') = width > height ? 'landscape' : 'portrait';
 
     let newWidth, newHeight;
-
-    //Landscape orientation
+    //Landscape
     if (ratioDifference > 0) {
         newWidth = workspaceWidth;
         newHeight = newWidth / imageRatio;
     }
-    //Portrait orientation
+    //Portrait
     else {
         newHeight = workspaceHeight;
         newWidth = newHeight * imageRatio;
     }
 
     resize(newWidth, newHeight);
-    // canv.value.getContext('2d').drawImage(im, 0, 0);
-    //Landscape orientation
-    // let limitingDimension;
-    // if ((workspaceOrientation == 'landscape' && imageOrientation == 'landscape') ||
-    //     (workspaceOrientation == )
 };
 
 const drawOnscreen = function () {
     window.requestAnimationFrame(() => {
-        let imageData = offscreenCanvas.getContext('2d')?.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
-        // canv.value.getContext('2d').imageSmoothingEnabled = false;
-        canv.value.getContext('2d').drawImage(offscreenCanvas, 0, 0, offscreenCanvas.width, offscreenCanvas.height, 0, 0, canv.value.width, canv.value.height);
+        canv.value.getContext('2d').drawImage(
+            props.sourceImage,
+            0, 0,
+            props.sourceImageWidth, props.sourceImageHeight,
+            0, 0,
+            canv.value.width, canv.value.height
+        );
+        
     });
 }
 
 window.onresize = function () {
-    calculateDims(loadedImageData.width, loadedImageData.height)
+    calculateDims(props.sourceImageWidth, props.sourceImageHeight)
     drawOnscreen();
 };
 
@@ -86,75 +72,14 @@ const resize = function (width: number, height: number): void {
     canv.value.height = height;
 }
 
-watch(dataURL, (newURL, oldURL) => {
-    if (newURL === oldURL) return;  //Image hasn't changed
-    let im = new Image();
-    im.src = newURL;
-    im.decode().then(() => {
-        let c_w = im.naturalWidth;
-        let c_h = im.naturalHeight;
-
-        loadedImageData.width = c_w;
-        loadedImageData.height = c_h;
-
-        offscreenCanvas.width = c_w;
-        offscreenCanvas.height = c_h;
-
-        offscreenCanvas.getContext('2d')?.drawImage(im, 0, 0);
-
-        // resize(c_w, c_h);
-        nextTick(() => {
-            calculateDims(c_w, c_h);
-            drawOnscreen();
-
-        });
-        // wrapper.value.style.width = `${c_w}px`;
-        // wrapper.value.style.height = `${c_h}px`;
-        // canv.value.width = c_w;
-        // canv.value.height = c_h;
-
-        // canv.value.getContext('2d').drawImage(im, 0, 0);
-    });
-});
-
 onUpdated(() => {
-    dataURL.value = props.dataURL;
+    calculateDims(props.sourceImageWidth, props.sourceImageHeight);
+    drawOnscreen();
 });
 
 onMounted(() => {
-    let im = new Image();
-    im.src = dataURL.value;
-    im.decode().then(() => {
-        let c_w = im.naturalWidth;
-        let c_h = im.naturalHeight;
-
-        loadedImageData.width = c_w;
-        loadedImageData.height = c_h;
-
-        offscreenCanvas.width = c_w;
-        offscreenCanvas.height = c_h;
-
-        offscreenCanvas.getContext('2d')?.drawImage(im, 0, 0);
-
-        // resize(c_w, c_h);
-        nextTick(() => {
-            calculateDims(c_w, c_h);
-            drawOnscreen();
-        });
-        // wrapper.value.style.width = `${c_w}px`;
-        // wrapper.value.style.height = `${c_h}px`;
-        // canv.value.width = c_w;
-        // canv.value.height = c_h;
-
-        // canv.value.getContext('2d').drawImage(im, 0, 0);
-    });
-    // console.log(canv.value);
-    // wrapper.value.style.width = `${props.width}px`;
-    // wrapper.value.style.height = `${props.height}px`;
-
-
-    // canv.value.width = props.width;
-    // canv.value.height = props.height;
+    calculateDims(props.sourceImageWidth, props.sourceImageHeight);
+    drawOnscreen();
 });
 </script>
 
