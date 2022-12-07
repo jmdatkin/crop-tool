@@ -1,6 +1,6 @@
 <template>
     <div class="workspace" ref="workspace">
-        <div ref="wrapper" class="canvas-wrapper border border-slate-700 shadow-lg">
+        <div ref="wrapper" class="canvas-wrapper border-slate-700 shadow-lg">
             <ImageCanvas v-if="dataLoaded"
                 :width="canvasDims.width"
                 :height="canvasDims.height"
@@ -100,8 +100,10 @@ window.onresize = function () {
 const resize = function (width: number, height: number): void {
     width = Math.floor(width);
     height = Math.floor(height);
-    wrapper.value.style.width = `${width+2}px`;     //Add 2 to account for border width
-    wrapper.value.style.height = `${height+2}px`;
+    // wrapper.value.style.width = `${width+2}px`;     //Add 2 to account for border width
+    // wrapper.value.style.height = `${height+2}px`;
+    wrapper.value.style.width = `${width}px`;     //Add 2 to account for border width
+    wrapper.value.style.height = `${height}px`;
 
     emit('resize', {width,height, scaleFactor: scaleFactor.value});
     // canv.value.width = width;
@@ -123,6 +125,7 @@ onMounted(() => {
     margin: 0 auto;
     // border: solid 1px black;
     // box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 0 1px #374151;
     position: relative;
     cursor: crosshair;
 }

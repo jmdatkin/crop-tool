@@ -3,7 +3,8 @@ import { rulerSize, sidebarWidth, appBarHeight } from '@/variables';
 import { createTextVNode, onMounted, onUpdated, ref, watch } from 'vue';
 
 const props = defineProps<{
-    imageBb: DOMRect,
+    canvasGroupBb: DOMRect,
+    imageDims: object,
     scaleFactor: number
 }>();
 
@@ -13,7 +14,7 @@ const rulerHCanv = ref(null);
 const rulerV = ref(null);
 const rulerVCanv = ref(null);
 
-const initDims = function() {
+const initDims = function () {
     let { width: widthH, height: heightH } = getComputedStyle(rulerH.value);
     let { width: widthV, height: heightV } = getComputedStyle(rulerV.value);
 
@@ -27,37 +28,42 @@ onMounted(() => {
     initDims();
 });
 
-watch(() => props.imageBb, () => {
-    if (props.imageBb !== null) {
+watch(() => props.canvasGroupBb, () => {
+    if (props.canvasGroupBb !== null) {
         initDims();
         drawRulerH();
         drawRulerV();
     }
 });
 
-const mod = function(n: number, m: number) {
-  return ((n % m) + m) % m;
+const mod = function (n: number, m: number) {
+    return ((n % m) + m) % m;
 }
 
 const drawRulerH = function () {
     const ctx = rulerHCanv.value.getContext('2d');
     const { width, height } = rulerHCanv.value;
 
+    const ticks = [];
+    for (let i = 0; i < props.imageDims.width; i += 20)
+        ticks.push(i);
+    ticks.push(props.imageDims.width);
 
     ctx.fillStyle = '#fff';
     ctx.clearRect(0, 0, width, height);
 
-    const start = props.imageBb.left - sidebarWidth - rulerSize;
-    const end = start + props.imageBb.width;
+    const start = props.canvasGroupBb.left - sidebarWidth - rulerSize;
+    const end = start + props.canvasGroupBb.width;
 
     ctx.fillStyle = '#000';
     ctx.beginPath();
 
     let c = 4;
-    for (let i = start; i <= end; i += 20*props.scaleFactor) {
-        let text = `${Math.floor((i-start)/props.scaleFactor)}`;
+    for (let [idx, tick] of ticks.entries()) {
+        let text = `${tick}`;
+        let i = tick * props.scaleFactor + start
         ctx.moveTo(i, 0);
-        if (c >= 4) {
+        if (c >= 4 || idx == ticks.length - 1) {
             ctx.lineTo(i, height / 4);
             const textMeasure = ctx.measureText(text);
             ctx.fillText(text, i - textMeasure.width / 2, height);
@@ -67,52 +73,53 @@ const drawRulerH = function () {
             c++;
         }
     }
-    const endText = `${Math.floor((end-start)/props.scaleFactor)}`;
-    const endTextMeasure = ctx.measureText(endText);
-    ctx.fillText(endText, end - endTextMeasure.width / 2, height);
-
-
 
     ctx.strokeWidth = 0.5;
     ctx.strokeStyle = '#000';
     ctx.stroke();
-
 };
 
 const drawRulerV = function () {
     const ctx = rulerVCanv.value.getContext('2d');
     let { width, height } = rulerVCanv.value;
 
-    [width,height] = [height,width]
+    [width, height] = [height, width]
+
+    const ticks = [];
+    for (let i = 0; i < props.imageDims.height; i += 20)
+        ticks.push(i);
+    ticks.push(props.imageDims.height);
 
     ctx.save();
     ctx.translate(0.5, 0.5);
 
-    ctx.rotate(3*Math.PI / 2);
+    ctx.rotate(3 * Math.PI / 2);
 
     ctx.textBaseline = "bottom";
     ctx.font = "Inter 9px";
-    ctx.fillText("Test", 0,0);
+    ctx.fillText("Test", 0, 0);
 
     ctx.fillStyle = '#fff';
     ctx.clearRect(0, 0, -width, height);
 
-    // const start = rulerSize - props.imageBb.height - props.imageBb.top + 50;// - sidebarWidth - rulerSize;
-    // const end = -50;
     const start = -50;
-    const end = rulerSize - props.imageBb.height - props.imageBb.top + 50;// - sidebarWidth - rulerSize;
+    const end = rulerSize - props.canvasGroupBb.height - props.canvasGroupBb.top + 50;// - sidebarWidth - rulerSize;
 
     ctx.fillStyle = '#000';
     ctx.beginPath();
 
     let c = 4;
-    for (let i = start; i >= end; i -= 20*props.scaleFactor) {
-        let text = `${Math.floor(Math.abs((i-start)/props.scaleFactor))}`;
+    for (let [idx, tick] of ticks.entries()) {
+        // for (let i = start; i >= end; i -= 20*props.scaleFactor) {
+        // let text = `${Math.floor(Math.abs((i-start)/props.scaleFactor))}`;
+        let text = tick;
+        let i = -tick * props.scaleFactor + start
         ctx.moveTo(i, 0);
-        console.log(mod(i-start,100))
-        if (c >= 4) {
+        if (c >= 4 || idx == ticks.length - 1) {
+            let d = Math.abs(tick - ticks[ticks.length - 1])
             ctx.lineTo(i, height / 4);
             const textMeasure = ctx.measureText(text);
+            if (d*props.scaleFactor < 50) continue;
             ctx.fillText(text, i - textMeasure.width / 2, height);
             c = 0;
         } else {
@@ -121,7 +128,7 @@ const drawRulerV = function () {
         }
     }
 
-    const endText = `${Math.abs(Math.floor((end-start)/props.scaleFactor))}`;
+    const endText = `${Math.abs(Math.floor((end - start) / props.scaleFactor))}`;
     const endTextMeasure = ctx.measureText(endText);
     ctx.fillText(endText, end - endTextMeasure.width / 2, height);
 

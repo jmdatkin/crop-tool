@@ -187,7 +187,8 @@ const mouseupHandler = function (e: MouseEvent) {
             <!-- <div class="drop-target"></div> -->
             <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler" @dragleave="dragendHandler"
                 @mousedown="mousedownHandler" @mousemove="mousemoveHandler" @mouseup="mouseupHandler">
-                <Rulers :imageBb="canvasGroupBb"
+                <Rulers :canvasGroupBb="canvasGroupBb"
+                :imageDims="imageDims"
                 :scaleFactor="canvasScaleFactor">
                     <div class="canvas-section-wrapper">
                         <CanvasGroup ref="canvasGroup" v-if="dataLoaded" @canvasMounted="onCanvasMounted"
