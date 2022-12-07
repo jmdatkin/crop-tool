@@ -84,8 +84,23 @@ const drawImage = function () {
         sx,sy,sw,sh,dx,dy,dw,dh);
 }
 
+const drawBackground = function() {
+    let color1 = '#F8FAFC';
+    let color2 = '#E4E4E7';
+    let size = 7;
+
+    for (let i=0; i<=canv.value.width; i += size) {
+        for (let j=0; j<=canv.value.height; j += size) {
+            let color = (i*size + j)%2 ? color1 : color2;
+            ctx.value.fillStyle = color;
+            ctx.value.fillRect(i,j,size,size);
+        }
+    }
+}
+
 const draw = function () {
     clear();
+    drawBackground();
     drawImage();
 };
 

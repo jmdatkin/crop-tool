@@ -1,9 +1,15 @@
+<script setup lang="ts">
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+</script>
+
 <template>
-    <div class="toolbar border-bottom">
-        <div class="toolbar-items">
-            <div class="toolbar-item">
-                <span>Crop Tool</span>
-                <!-- <button>Button</button> -->
+    <div class="app-bar border-b">
+        <div class="app-bar-items space-x-2">
+            <div class="app-bar-item">
+                <FontAwesomeIcon class="text-slate-700" size="xl" icon="fa-solid fa-crop" />
+            </div>
+            <div class="app-bar-item">
+                <span class="text-slate-700">Croppy</span>
             </div>
         </div>
     </div>
@@ -11,13 +17,13 @@
 
 <style lang="scss" scoped>
 @import '@/assets/variables.scss';
-    .toolbar {
+    .app-bar {
         width: 100%;
-        height: $toolbar-height;
+        height: $app-bar-height;
         padding: 5px 0;
     }
 
-    .toolbar-items {
+    .app-bar-items {
         display: flex;
         flex-direction: row;
         margin: 0 40px;
@@ -39,7 +45,6 @@
 
     span {
         font-weight: 700;
-        font-size: 2rem;
-        font-family: 'Roboto','Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+        font-size: 1.75rem;
     }
 </style>

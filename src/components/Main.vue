@@ -2,6 +2,7 @@
 import Canvas from "./Canvas/ImageCanvas.vue";
 import { loadFile } from '../file-handler';
 import { nextTick, reactive, ref, type Ref } from "vue";
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import ProgressBar from "./ProgressBar.vue";
 import CanvasGroup from "./Canvas/CanvasGroup.vue";
 import CollapsibleToolbar from "./CollapsibleToolbar.vue";
@@ -176,9 +177,9 @@ const mouseupHandler = function (e: MouseEvent) {
                 :dataLoaded="dataLoaded"
             ></CanvasGroup>
             <div v-else class="canvas-placeholder">
-                <h2 :class="{ 'dragging': dragging }">Drag an image</h2>
-                <span :class="{ 'drag-icon-dragging': dragging}">
-               <i class="fa-solid fa-upload"></i> 
+                <h2 class="text-gray-500 tracking-tight" :class="{ 'dragging': dragging }">Drag an image</h2>
+                <span class="upload-icon" :class="{ 'upload-icon-dragging': dragging}">
+                    <FontAwesomeIcon class="text-gray-500" icon="fa-solid fa-upload" size="6x"></FontAwesomeIcon>
                 </span>
             </div>
         </div>
@@ -215,11 +216,21 @@ h2 {
     // animation-name: dragging;
 }
 
+span.upload-icon {
+    text-align: center;
+    opacity: 0;
+}
+
+span.upload-icon.upload-icon-dragging {
+    animation: upload-icon-enter 0.5s normal forwards ease-in-out, 0.5s upload-icon-hover 0.5s alternate infinite ease-in-out;
+}
+
 .canvas-placeholder {
     width: 100%;
     height: 100%;
     display: flex;
-    color: #666;
+    flex-direction: column;
+    user-select: none;
     place-items: center;
     justify-content: center;
 }
@@ -233,6 +244,28 @@ h2 {
     to {
         color: #aaa;
         transform: scale(1.0045);
+    }
+}
+
+@keyframes upload-icon-hover {
+    from {
+        opacity: 1
+    }
+
+    to {
+        opacity: 0.5
+    }
+}
+
+@keyframes upload-icon-enter {
+    from {
+        transform: translateY(10px);
+        opacity: 0
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1
     }
 }
 </style>

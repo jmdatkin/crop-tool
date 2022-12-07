@@ -16,7 +16,7 @@ import AppBar from './components/AppBar.vue'
 
 .app-wrapper {
   width: 100%;
-  height: calc(100% - $toolbar-height);
+  height: calc(100% - $app-bar-height);
 }
 
 </style>
