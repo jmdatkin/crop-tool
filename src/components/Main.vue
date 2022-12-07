@@ -11,6 +11,7 @@ import ToolbarItem from "./ToolbarItem.vue";
 import CropPreview from "./CropPreview.vue";
 import { sidebarWidth } from '@/variables';
 import InputText from "./InputText.vue";
+import Button from "./Button.vue";
 
 const dragging = ref(false);
 const dataLoaded = ref(false);
@@ -154,22 +155,24 @@ const mouseupHandler = function (e: MouseEvent) {
 <template>
     <div class="main-view" ref="mainView">
         <div class="main-wrapper h-full w-full">
-            <div class="sidebar border-r flex flex-col items-center py-6 space-y-6" :style="{ 'minWidth': sidebarWidth + 'px' }">
+            <div class="sidebar border-r flex flex-col items-center py-6 space-y-6"
+                :style="{ 'minWidth': sidebarWidth + 'px' }">
                 <div class="sidebar-container flex flex-col items-start space-y-6">
-                <ToolbarItem title="Crop Preview">
-                    <CropPreview :mousePositionData="offsetMousePosition" :sourceImage="imageObject"
-                        :sourceImageWidth="imageDims.width" :sourceImageHeight="imageDims.height"
-                        :scaleFactor="canvasScaleFactor"></CropPreview>
-                </ToolbarItem>
-                <ToolbarItem title="Coords">
-                    <div class="coords-wrapper">
-                        <InputText v-model="mousePositionData.px"></InputText>
-                        <InputText v-model="mousePositionData.py"></InputText>
-                        <InputText v-model="mousePositionData.qx"></InputText>
-                        <InputText v-model="mousePositionData.qy"></InputText>
-                    </div>
-                </ToolbarItem>
+                    <ToolbarItem title="Crop Preview">
+                        <CropPreview :mousePositionData="offsetMousePosition" :sourceImage="imageObject"
+                            :sourceImageWidth="imageDims.width" :sourceImageHeight="imageDims.height"
+                            :scaleFactor="canvasScaleFactor"></CropPreview>
+                    </ToolbarItem>
+                    <ToolbarItem title="Coords">
+                        <div class="coords-wrapper">
+                            <InputText v-model="mousePositionData.px"></InputText>
+                            <InputText v-model="mousePositionData.py"></InputText>
+                            <InputText v-model="mousePositionData.qx"></InputText>
+                            <InputText v-model="mousePositionData.qy"></InputText>
+                        </div>
+                    </ToolbarItem>
 
+                    <Button label="Crop"></Button>
                 </div>
             </div>
             <!-- <CollapsibleToolbar v-if="dataLoaded" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
@@ -184,6 +187,7 @@ const mouseupHandler = function (e: MouseEvent) {
                     :sourceImageHeight="imageDims.height" :mousePositionData="offsetMousePosition" :dragging="clickDrag"
                     :fileLoaded="fileLoaded" :dataLoaded="dataLoaded"></CanvasGroup>
                 <div v-else class="canvas-placeholder">
+                    <div class="crop-placeholder"></div>
                     <h2 class="text-gray-500 tracking-tight" :class="{ 'dragging': dragging }">Drag an image</h2>
                     <span class="upload-icon" :class="{ 'upload-icon-dragging': dragging }">
                         <FontAwesomeIcon class="text-gray-500" icon="fa-solid fa-upload" size="6x"></FontAwesomeIcon>
@@ -216,6 +220,8 @@ const mouseupHandler = function (e: MouseEvent) {
 .sidebar {
     // min-width: $sidebar-width; 
     height: 100%;
+    background-color: #fff;
+    z-index: 999;
 }
 
 .content-wrapper {
@@ -229,14 +235,15 @@ const mouseupHandler = function (e: MouseEvent) {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
+
 h2 {
     font-size: 48pt;
-    margin-bottom: 12rem;
+    margin-bottom: 4rem;
     pointer-events: none;
 }
 
 .dragging {
-    animation: dragging 1s infinite alternate-reverse ease-in-out;
+    animation: dragging 1s infinite alternate ease-in-out;
     // animation-name: dragging;
 }
 
@@ -259,14 +266,22 @@ span.upload-icon.upload-icon-dragging {
     justify-content: center;
 }
 
+div.crop-placeholder {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='19' ry='19' stroke='%23D4D4D4FF' stroke-width='6' stroke-dasharray='6%2c 14' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    border-radius: 19px;
+    width: 800px;
+    height: 500px;
+    position: absolute;
+}
+
 @keyframes dragging {
     from {
-        color: #666;
+        opacity: 1;
         transform: 0;
     }
 
     to {
-        color: #aaa;
+        opacity: 0.5;
         transform: scale(1.0045);
     }
 }
@@ -295,10 +310,7 @@ span.upload-icon.upload-icon-dragging {
 </style>
 
 <style lang="scss">
-
 .coords-wrapper input {
     max-width: 100px;
 }
-
-
 </style>

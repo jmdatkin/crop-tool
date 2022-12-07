@@ -135,7 +135,7 @@ onMounted(() => {
 <style lang="scss">
 div.crop-preview-wrapper {
     width: 300px;
-    height: 200px;
+    height: 300px;
     // border: solid 1px black;
 }
 </style>
