@@ -1,6 +1,6 @@
 <template>
     <div class="workspace" ref="workspace">
-        <div ref="wrapper" class="canvas-wrapper border-slate-700 shadow-lg">
+        <div ref="wrapper" class="canvas-wrapper border-slate-700 shadow-lg" :class="{'wrapper-data-loaded': dataLoaded}" >
             <ImageCanvas v-if="dataLoaded"
                 :width="canvasDims.width"
                 :height="canvasDims.height"
@@ -127,15 +127,20 @@ onMounted(() => {
     // box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
     box-shadow: 0 0 0 1px #374151;
     position: relative;
+    opacity: 0;
+    transition: opacity 0.2s;
     cursor: crosshair;
 }
-
+.wrapper-data-loaded {
+    opacity: 1;
+}
 .workspace {
     max-width: 1600px;
     width: 100%;
     height: 100%;
     margin: 0 auto;
 }
+
 
 
 </style>

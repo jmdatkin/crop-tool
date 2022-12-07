@@ -165,7 +165,11 @@ const mousedownHandler = function (e: MouseEvent) {
     mouseDown.value = true;
 };
 
+let lastEvent = Date.now();
+let debounceTime = 10;
 const mousemoveHandler = function (e: MouseEvent) {
+    let timeNow = Date.now();
+    if (timeNow - lastEvent < debounceTime) return;
     let qx = e.pageX;
     let qy = e.pageY;
 
@@ -179,6 +183,7 @@ const mousemoveHandler = function (e: MouseEvent) {
         mousePositionData.qx = qx;
         mousePositionData.qy = qy;
     }
+    lastEvent = timeNow;
 };
 
 const mouseupHandler = function (e: MouseEvent) {
@@ -194,7 +199,7 @@ const mouseupHandler = function (e: MouseEvent) {
             <div class="sidebar border-r flex flex-col items-center py-6 space-y-6"
                 :style="{ 'minWidth': sidebarWidth + 'px' }">
                 <div class="sidebar-container flex flex-col items-start space-y-6">
-                    <ToolbarItem title="Crop Preview">
+                    <ToolbarItem title="Preview">
                         <CropPreview :mousePositionData="offsetMousePosition" :sourceImage="imageObject"
                             :sourceImageWidth="imageDims.width" :sourceImageHeight="imageDims.height"
                             :scaleFactor="canvasScaleFactor"></CropPreview>
@@ -218,7 +223,9 @@ const mouseupHandler = function (e: MouseEvent) {
             <!-- <div class="drop-target"></div> -->
             <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler" @dragleave="dragendHandler"
                 @mousedown="mousedownHandler" @mousemove="mousemoveHandler" @mouseup="mouseupHandler">
-                <Rulers :canvasGroupBb="canvasGroupBb" :imageDims="imageDims" :scaleFactor="canvasScaleFactor">
+                <Rulers :canvasGroupBb="canvasGroupBb" :imageDims="imageDims" :scaleFactor="canvasScaleFactor"
+                :mousePositionData="mousePositionData"
+                >
                     <div class="canvas-section-wrapper">
                         <CanvasGroup ref="canvasGroup" v-if="dataLoaded" @canvasMounted="onCanvasMounted"
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
