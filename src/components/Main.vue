@@ -13,6 +13,7 @@ import { sidebarWidth } from '@/variables';
 import InputText from "./InputText.vue";
 import Button from "./Button.vue";
 import Rulers from "./Rulers.vue";
+import { transform } from "@vue/compiler-core";
 
 const dragging = ref(false);
 const dataLoaded = ref(false);
@@ -48,6 +49,31 @@ const mousePositionData = reactive({
     qx: 0,
     qy: 0
 });
+
+const transformMousePosition = function (position) {
+    if (dataLoaded.value && canvasMounted.value) {
+        let canvasBb = canvasGroup.value.wrapper.getBoundingClientRect();
+        let mainViewBb = mainView.value.getBoundingClientRect();
+
+        let { px, py, qx, qy } = position;
+
+        // Swap x coords if drawn backwards horizontally
+        if (qx < px)
+            [px, qx] = [qx, px]
+
+        // Swap y coords if drawn backwards vertically
+        if (qy < py)
+            [py, qy] = [qy, py]
+
+        return {
+            px: Math.min(Math.max(canvasBb.left, px), canvasBb.left + canvasBb.width) - canvasBb.left,// - mainViewBb.left,
+            py: Math.min(Math.max(canvasBb.top, py), canvasBb.top + canvasBb.height) - canvasBb.top,// - mainViewBb.top,
+            qx: Math.min(Math.max(canvasBb.left, qx), canvasBb.left + canvasBb.width) - canvasBb.left,// - mainViewBb.left,
+            qy: Math.min(Math.max(canvasBb.top, qy), canvasBb.top + canvasBb.height) - canvasBb.top,// - mainViewBb.top,
+        };
+    }
+    else return position;
+};
 
 const offsetMousePosition = computed(() => {
     if (dataLoaded.value && canvasMounted.value) {
@@ -126,6 +152,11 @@ const dragendHandler = function (e: Event) {
 }
 
 const mousedownHandler = function (e: MouseEvent) {
+    let {px,py,qx,qy} = transformMousePosition({
+        px: e.pageX,
+        py: e.pageY,
+
+    })
     mousePositionData.px = e.pageX;
     mousePositionData.py = e.pageY;
     mousePositionData.qx = e.pageX;
@@ -187,9 +218,7 @@ const mouseupHandler = function (e: MouseEvent) {
             <!-- <div class="drop-target"></div> -->
             <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler" @dragleave="dragendHandler"
                 @mousedown="mousedownHandler" @mousemove="mousemoveHandler" @mouseup="mouseupHandler">
-                <Rulers :canvasGroupBb="canvasGroupBb"
-                :imageDims="imageDims"
-                :scaleFactor="canvasScaleFactor">
+                <Rulers :canvasGroupBb="canvasGroupBb" :imageDims="imageDims" :scaleFactor="canvasScaleFactor">
                     <div class="canvas-section-wrapper">
                         <CanvasGroup ref="canvasGroup" v-if="dataLoaded" @canvasMounted="onCanvasMounted"
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"

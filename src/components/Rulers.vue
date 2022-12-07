@@ -62,13 +62,17 @@ const drawRulerH = function () {
     for (let [idx, tick] of ticks.entries()) {
         let text = `${tick}`;
         let i = tick * props.scaleFactor + start
+        let d = Math.abs(tick - ticks[ticks.length - 1])
         ctx.moveTo(i, 0);
         if (c >= 4 || idx == ticks.length - 1) {
+            // if (d*props.scaleFactor < 10) continue;
             ctx.lineTo(i, height / 4);
             const textMeasure = ctx.measureText(text);
+            if (d * props.scaleFactor < 20 && idx < ticks.length - 1) continue;
             ctx.fillText(text, i - textMeasure.width / 2, height);
             c = 0;
         } else {
+            if (d*props.scaleFactor < 10) continue;
             ctx.lineTo(i, height / 6);
             c++;
         }
@@ -110,27 +114,27 @@ const drawRulerV = function () {
 
     let c = 4;
     for (let [idx, tick] of ticks.entries()) {
-        // for (let i = start; i >= end; i -= 20*props.scaleFactor) {
-        // let text = `${Math.floor(Math.abs((i-start)/props.scaleFactor))}`;
         let text = tick;
         let i = -tick * props.scaleFactor + start
+        let d = Math.abs(tick - ticks[ticks.length - 1])
         ctx.moveTo(i, 0);
         if (c >= 4 || idx == ticks.length - 1) {
-            let d = Math.abs(tick - ticks[ticks.length - 1])
+            // if (d * props.scaleFactor < 10 && idx < ticks.length - 1) continue;
             ctx.lineTo(i, height / 4);
             const textMeasure = ctx.measureText(text);
-            if (d*props.scaleFactor < 50) continue;
+            if (d * props.scaleFactor < 50 && idx < ticks.length - 1) continue;
             ctx.fillText(text, i - textMeasure.width / 2, height);
             c = 0;
         } else {
+            if (d * props.scaleFactor < 10 && idx < ticks.length - 1) continue;
             ctx.lineTo(i, height / 6);
             c++;
         }
     }
 
-    const endText = `${Math.abs(Math.floor((end - start) / props.scaleFactor))}`;
-    const endTextMeasure = ctx.measureText(endText);
-    ctx.fillText(endText, end - endTextMeasure.width / 2, height);
+    // const endText = `${Math.abs(Math.floor((end - start) / props.scaleFactor))}`;
+    // const endTextMeasure = ctx.measureText(endText);
+    // ctx.fillText(endText, end - endTextMeasure.width / 2, height);
 
     ctx.strokeWidth = 0.5;
     ctx.strokeStyle = '#000';
