@@ -1,6 +1,17 @@
 <script setup lang="ts">
+import { inject, provide, readonly, ref } from 'vue';
 import { RouterLink, RouterView } from 'vue-router'
 import AppBar from './components/AppBar.vue'
+import eventBus from './events';
+
+const sidebarOpen = ref(false);
+
+provide('sidebar-status', readonly(sidebarOpen));
+
+eventBus.on('sidebar-toggle', () => {
+  sidebarOpen.value = !sidebarOpen.value;
+});
+
 </script>
 
 <template>

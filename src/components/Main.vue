@@ -7,6 +7,10 @@ import ProgressBar from "./ProgressBar.vue";
 import CanvasGroup from "./Canvas/CanvasGroup.vue";
 import CollapsibleToolbar from "./CollapsibleToolbar.vue";
 import { computed } from "@vue/reactivity";
+import ToolbarItem from "./ToolbarItem.vue";
+import CropPreview from "./CropPreview.vue";
+import { sidebarWidth } from '@/variables';
+import InputText from "./InputText.vue";
 
 const dragging = ref(false);
 const dataLoaded = ref(false);
@@ -21,9 +25,9 @@ const canvasGroup = ref(null);
 
 const offscreenCanvas: Ref<HTMLCanvasElement> = ref(document.createElement('canvas'));
 const offscreenImageData = computed(() => {
-    let {width, height} = offscreenCanvas.value;
+    let { width, height } = offscreenCanvas.value;
 
-    return offscreenCanvas.value.getContext('2d')?.getImageData(0,0,width,height) || null;
+    return offscreenCanvas.value.getContext('2d')?.getImageData(0, 0, width, height) || null;
 });
 
 const imageObject: Ref<HTMLImageElement | null> = ref(null);
@@ -46,15 +50,15 @@ const offsetMousePosition = computed(() => {
         let canvasBb = canvasGroup.value.wrapper.getBoundingClientRect();
         let mainViewBb = mainView.value.getBoundingClientRect();
 
-        let {px,py,qx,qy} = mousePositionData;
+        let { px, py, qx, qy } = mousePositionData;
 
         // Swap x coords if drawn backwards horizontally
         if (qx < px)
-            [px,qx] = [qx,px]
-            
+            [px, qx] = [qx, px]
+
         // Swap y coords if drawn backwards vertically
         if (qy < py)
-            [py,qy] = [qy,py]
+            [py, qy] = [qy, py]
 
         return {
             px: Math.min(Math.max(canvasBb.left, px), canvasBb.left + canvasBb.width) - canvasBb.left,// - mainViewBb.left,
@@ -96,11 +100,11 @@ const dropHandler = function (e: DragEvent) {
     }
 };
 
-const onCanvasMounted = function() {
+const onCanvasMounted = function () {
     canvasMounted.value = true;
 };
 
-const onCanvasResize = function(data) {
+const onCanvasResize = function (data) {
     canvasScaleFactor.value = data.scaleFactor;
 };
 
@@ -110,7 +114,7 @@ const dragHandler = function (e: Event) {
     dragging.value = true;
 }
 
-const dragendHandler = function(e: Event) {
+const dragendHandler = function (e: Event) {
     e.preventDefault();
     dragging.value = false;
 }
@@ -131,7 +135,7 @@ const mousemoveHandler = function (e: MouseEvent) {
     let dx = qx - mousePositionData.px;
     let dy = qy - mousePositionData.py;
 
-    if (dx*dx + dy*dy > 81 && mouseDown.value)
+    if (dx * dx + dy * dy > 81 && mouseDown.value)
         clickDrag.value = true;
 
     if (clickDrag.value) {
@@ -149,44 +153,50 @@ const mouseupHandler = function (e: MouseEvent) {
 
 <template>
     <div class="main-view" ref="mainView">
-        <CollapsibleToolbar v-if="dataLoaded"
-            :sourceImage="imageObject"
-            :sourceImageWidth="imageDims.width"
-            :sourceImageHeight="imageDims.height"
-            :mousePositionData="offsetMousePosition"
-            :scaleFactor="canvasScaleFactor"
+        <div class="main-wrapper h-full w-full">
+            <div class="sidebar border-r flex flex-col items-center py-6 space-y-6" :style="{ 'minWidth': sidebarWidth + 'px' }">
+                <div class="sidebar-container flex flex-col items-start space-y-6">
+                <ToolbarItem title="Crop Preview">
+                    <CropPreview :mousePositionData="offsetMousePosition" :sourceImage="imageObject"
+                        :sourceImageWidth="imageDims.width" :sourceImageHeight="imageDims.height"
+                        :scaleFactor="canvasScaleFactor"></CropPreview>
+                </ToolbarItem>
+                <ToolbarItem title="Coords">
+                    <div class="coords-wrapper">
+                        <InputText v-model="mousePositionData.px"></InputText>
+                        <InputText v-model="mousePositionData.py"></InputText>
+                        <InputText v-model="mousePositionData.qx"></InputText>
+                        <InputText v-model="mousePositionData.qy"></InputText>
+                    </div>
+                </ToolbarItem>
 
-        ></CollapsibleToolbar>
-        <!-- <ProgressBar /> -->
-        <!-- <div class="drop-target"></div> -->
-        <div class="content-wrapper"
-            @drop.prevent="dropHandler"
-            @dragover="dragHandler"
-            @dragleave="dragendHandler"
-            @mousedown="mousedownHandler"
-            @mousemove="mousemoveHandler"
-            @mouseup="mouseupHandler"
-            >
-            <CanvasGroup ref="canvasGroup" v-if="dataLoaded" @canvasMounted="onCanvasMounted" @resize="onCanvasResize"
-                :sourceImage="imageObject"
-                :sourceImageWidth="imageDims.width"
-                :sourceImageHeight="imageDims.height"
-                :mousePositionData="offsetMousePosition"
-                :dragging="clickDrag"
-                :fileLoaded="fileLoaded"
-                :dataLoaded="dataLoaded"
-            ></CanvasGroup>
-            <div v-else class="canvas-placeholder">
-                <h2 class="text-gray-500 tracking-tight" :class="{ 'dragging': dragging }">Drag an image</h2>
-                <span class="upload-icon" :class="{ 'upload-icon-dragging': dragging}">
-                    <FontAwesomeIcon class="text-gray-500" icon="fa-solid fa-upload" size="6x"></FontAwesomeIcon>
-                </span>
+                </div>
+            </div>
+            <!-- <CollapsibleToolbar v-if="dataLoaded" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
+                :sourceImageHeight="imageDims.height" :mousePositionData="offsetMousePosition"
+                :scaleFactor="canvasScaleFactor"></CollapsibleToolbar> -->
+            <!-- <ProgressBar /> -->
+            <!-- <div class="drop-target"></div> -->
+            <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler" @dragleave="dragendHandler"
+                @mousedown="mousedownHandler" @mousemove="mousemoveHandler" @mouseup="mouseupHandler">
+                <CanvasGroup ref="canvasGroup" v-if="dataLoaded" @canvasMounted="onCanvasMounted"
+                    @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
+                    :sourceImageHeight="imageDims.height" :mousePositionData="offsetMousePosition" :dragging="clickDrag"
+                    :fileLoaded="fileLoaded" :dataLoaded="dataLoaded"></CanvasGroup>
+                <div v-else class="canvas-placeholder">
+                    <h2 class="text-gray-500 tracking-tight" :class="{ 'dragging': dragging }">Drag an image</h2>
+                    <span class="upload-icon" :class="{ 'upload-icon-dragging': dragging }">
+                        <FontAwesomeIcon class="text-gray-500" icon="fa-solid fa-upload" size="6x"></FontAwesomeIcon>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <style scoped lang="scss">
+@import '@/assets/variables.scss';
+
 .drop-target {
     position: absolute;
     width: 100%;
@@ -199,12 +209,26 @@ const mouseupHandler = function (e: MouseEvent) {
     position: relative;
 }
 
+.main-wrapper {
+    display: flex;
+}
+
+.sidebar {
+    // min-width: $sidebar-width; 
+    height: 100%;
+}
+
 .content-wrapper {
     width: 100%;
     height: 100%;
     padding: 40px 0;
 }
 
+.coords-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
 h2 {
     font-size: 48pt;
     margin-bottom: 12rem;
@@ -268,4 +292,13 @@ span.upload-icon.upload-icon-dragging {
         opacity: 1
     }
 }
+</style>
+
+<style lang="scss">
+
+.coords-wrapper input {
+    max-width: 100px;
+}
+
+
 </style>

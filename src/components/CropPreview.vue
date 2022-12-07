@@ -127,15 +127,15 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="crop-preview-wrapper" ref="wrapper">
+    <div class="crop-preview-wrapper border border-slate-600" ref="wrapper">
         <canvas id="crop-preview-canvas" ref="canv"></canvas>
     </div>
 </template>
 
 <style lang="scss">
 div.crop-preview-wrapper {
-    width: 225px;
-    height: 150px;
-    border: solid 1px black;
+    width: 300px;
+    height: 200px;
+    // border: solid 1px black;
 }
 </style>

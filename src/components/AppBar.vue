@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import eventBus from '@/events';
+import { inject} from 'vue';
+import { sidebarWidth } from '@/variables';
+
+const toggle = () => eventBus.emit('sidebar-toggle');
+
+const sidebarOpen = inject('sidebar-status');
+
 </script>
 
 <template>
     <div class="app-bar border-b">
+        <div class="app-bar-sidebar-spacer border-r" :style="{'min-width': sidebarWidth + 'px'}">
+        </div>
         <div class="app-bar-items space-x-2">
             <div class="app-bar-item">
                 <FontAwesomeIcon class="text-slate-700" size="xl" icon="fa-solid fa-crop" />
@@ -20,7 +30,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
     .app-bar {
         width: 100%;
         height: $app-bar-height;
-        padding: 5px 0;
+        display: flex;
     }
 
     .app-bar-items {
@@ -28,6 +38,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
         flex-direction: row;
         margin: 0 40px;
         place-items: center;
+        padding: 5px 0;
     }
 
     button {
