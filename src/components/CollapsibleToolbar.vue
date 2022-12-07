@@ -5,6 +5,7 @@
         :sourceImage="props.sourceImage"
         :sourceImageWidth="props.sourceImageWidth"
         :sourceImageHeight="props.sourceImageHeight"
+        :scaleFactor="scaleFactor"
     ></CropPreview>
 </div>
 </template>
@@ -18,6 +19,7 @@ const props = defineProps<{
     sourceImageWidth: Number,
     sourceImageHeight: Number,
     mousePositionData: MousePositionData,
+    scaleFactor: Number
 }>();
 
 </script>

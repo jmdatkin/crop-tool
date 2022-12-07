@@ -7,6 +7,7 @@ const props = defineProps<{
     sourceImageWidth: Number,
     sourceImageHeight: Number,
     mousePositionData: MousePositionData,
+    scaleFactor: number
 }>();
 
 const canv = ref(null);
@@ -15,6 +16,12 @@ const wrapper = ref(null);
 
 const calculateSize = function () {
     let { px, py, qx, qy } = props.mousePositionData;
+
+    px /= props.scaleFactor;
+    py /= props.scaleFactor;
+    qx /= props.scaleFactor;
+    qy /= props.scaleFactor;
+
     let imageWidth, imageHeight, ratio = 1;
     let cropWidth = qx - px,
         cropHeight = qy - py;

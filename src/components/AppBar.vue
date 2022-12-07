@@ -2,6 +2,7 @@
     <div class="toolbar border-bottom">
         <div class="toolbar-items">
             <div class="toolbar-item">
+                <span>Crop Tool</span>
                 <!-- <button>Button</button> -->
             </div>
         </div>
@@ -34,6 +35,11 @@
         border-radius: 8px;
         line-height: 200%;
         // vertical-align: middle;
-    
+    }
+
+    span {
+        font-weight: 700;
+        font-size: 2rem;
+        font-family: 'Roboto','Segoe UI', Tahoma, Geneva, Verdana, sans-serif
     }
 </style>

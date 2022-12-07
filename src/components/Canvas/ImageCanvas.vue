@@ -16,8 +16,7 @@ const props = defineProps<{
 
 const canv = ref(null);
 
-const drawOnscreen = function () {
-    window.requestAnimationFrame(() => {
+const draw = function() {
         canv.value.getContext('2d').drawImage(
             props.sourceImage,
             0, 0,
@@ -25,9 +24,23 @@ const drawOnscreen = function () {
             0, 0,
             canv.value.width, canv.value.height
         );
+};
 
+const drawOnscreen = function () {
+    window.requestAnimationFrame(() => {
+        // canv.value.getContext('2d').drawImage(
+        //     props.sourceImage,
+        //     0, 0,
+        //     props.sourceImageWidth, props.sourceImageHeight,
+        //     0, 0,
+        //     canv.value.width, canv.value.height
+        // );
+        if (canv.value !== null)
+            draw();
+        else
+            drawOnscreen();
     });
-}
+};
 
 onUpdated(() => {
     canv.value.width = props.width;

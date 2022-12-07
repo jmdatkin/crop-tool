@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Canvas from "./Canvas/ImageCanvas.vue";
 import { loadFile } from '../file-handler';
-import { reactive, ref, type Ref } from "vue";
+import { nextTick, reactive, ref, type Ref } from "vue";
 import ProgressBar from "./ProgressBar.vue";
 import CanvasGroup from "./Canvas/CanvasGroup.vue";
 import CollapsibleToolbar from "./CollapsibleToolbar.vue";
@@ -9,9 +9,14 @@ import { computed } from "@vue/reactivity";
 
 const dragging = ref(false);
 const dataLoaded = ref(false);
+const fileLoaded = ref(false);
+const canvasMounted = ref(false);
+const canvasScaleFactor = ref(1.0);
 
 const mainView = ref(null);
 const canvasGroup = ref(null);
+
+// const scaleFactor = ref(canvasG)
 
 const offscreenCanvas: Ref<HTMLCanvasElement> = ref(document.createElement('canvas'));
 const offscreenImageData = computed(() => {
@@ -36,17 +41,25 @@ const mousePositionData = reactive({
 });
 
 const offsetMousePosition = computed(() => {
-    if (dataLoaded.value) {
-    // if (true) {
-        console.log("HIHIH");
-        let canvasBb = canvasGroup.value.wrapper.value.getBoundingClientRect();
+    if (dataLoaded.value && canvasMounted.value) {
+        let canvasBb = canvasGroup.value.wrapper.getBoundingClientRect();
         let mainViewBb = mainView.value.getBoundingClientRect();
-        console.log(canvasBb);
+
+        let {px,py,qx,qy} = mousePositionData;
+
+        // Swap x coords if drawn backwards horizontally
+        if (qx < px)
+            [px,qx] = [qx,px]
+            
+        // Swap y coords if drawn backwards vertically
+        if (qy < py)
+            [py,qy] = [qy,py]
+
         return {
-            px: mousePositionData.px - canvasBb.left - mainViewBb.left,
-            py: mousePositionData.py - canvasBb.top - mainViewBb.top,
-            qx: mousePositionData.qx - canvasBb.left - mainViewBb.left,
-            qy: mousePositionData.qy - canvasBb.top - mainViewBb.top
+            px: Math.min(Math.max(canvasBb.left, px), canvasBb.left + canvasBb.width) - canvasBb.left,// - mainViewBb.left,
+            py: Math.min(Math.max(canvasBb.top, py), canvasBb.top + canvasBb.height) - canvasBb.top,// - mainViewBb.top,
+            qx: Math.min(Math.max(canvasBb.left, qx), canvasBb.left + canvasBb.width) - canvasBb.left,// - mainViewBb.left,
+            qy: Math.min(Math.max(canvasBb.top, qy), canvasBb.top + canvasBb.height) - canvasBb.top,// - mainViewBb.top,
         };
     }
     else return mousePositionData;
@@ -72,20 +85,33 @@ const dropHandler = function (e: DragEvent) {
     dragging.value = false;
 
     if (e.dataTransfer.items) {
+        dataLoaded.value = false;
+        canvasMounted.value = false;
         let item = e.dataTransfer.items[0];
 
         loadFile(item).then(url => {
             loadImageObject(url);
-            // canvas_dataURL.value = url;
         }).catch(err => console.error(err));
     }
 };
 
+const onCanvasMounted = function() {
+    canvasMounted.value = true;
+};
+
+const onCanvasResize = function(data) {
+    canvasScaleFactor.value = data.scaleFactor;
+};
 
 
 const dragHandler = function (e: Event) {
     e.preventDefault();
     dragging.value = true;
+}
+
+const dragendHandler = function(e: Event) {
+    e.preventDefault();
+    dragging.value = false;
 }
 
 const mousedownHandler = function (e: MouseEvent) {
@@ -127,26 +153,33 @@ const mouseupHandler = function (e: MouseEvent) {
             :sourceImageWidth="imageDims.width"
             :sourceImageHeight="imageDims.height"
             :mousePositionData="offsetMousePosition"
+            :scaleFactor="canvasScaleFactor"
 
         ></CollapsibleToolbar>
-        <ProgressBar />
+        <!-- <ProgressBar /> -->
         <!-- <div class="drop-target"></div> -->
         <div class="content-wrapper"
             @drop.prevent="dropHandler"
             @dragover="dragHandler"
+            @dragleave="dragendHandler"
             @mousedown="mousedownHandler"
             @mousemove="mousemoveHandler"
             @mouseup="mouseupHandler"
             >
-            <CanvasGroup v-if="dataLoaded" ref="canvasGroup"
+            <CanvasGroup ref="canvasGroup" v-if="dataLoaded" @canvasMounted="onCanvasMounted" @resize="onCanvasResize"
                 :sourceImage="imageObject"
                 :sourceImageWidth="imageDims.width"
                 :sourceImageHeight="imageDims.height"
-                :mousePositionData="mousePositionData"
+                :mousePositionData="offsetMousePosition"
                 :dragging="clickDrag"
+                :fileLoaded="fileLoaded"
+                :dataLoaded="dataLoaded"
             ></CanvasGroup>
             <div v-else class="canvas-placeholder">
                 <h2 :class="{ 'dragging': dragging }">Drag an image</h2>
+                <span :class="{ 'drag-icon-dragging': dragging}">
+               <i class="fa-solid fa-upload"></i> 
+                </span>
             </div>
         </div>
     </div>
