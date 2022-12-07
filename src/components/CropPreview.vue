@@ -96,6 +96,9 @@ const drawBackground = function() {
             ctx.value.fillRect(i,j,size,size);
         }
     }
+
+    ctx.value.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.value.fillRect(0,0,canv.value.width,canv.value.height);
 }
 
 const draw = function () {
@@ -122,6 +125,8 @@ onMounted(() => {
     wrapper.value.style.width = `${width + 2}px`;
     wrapper.value.style.height = `${height + 2}px`;
     // draw();
+    clear();
+    drawBackground();
 });
 
 </script>

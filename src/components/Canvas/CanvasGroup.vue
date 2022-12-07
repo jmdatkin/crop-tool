@@ -1,6 +1,6 @@
 <template>
     <div class="workspace" ref="workspace">
-        <div ref="wrapper" class="canvas-wrapper">
+        <div ref="wrapper" class="canvas-wrapper border border-slate-700 shadow-lg">
             <ImageCanvas v-if="dataLoaded"
                 :width="canvasDims.width"
                 :height="canvasDims.height"
@@ -49,17 +49,6 @@ defineExpose({
 const canvasDims = reactive({
     width: 0,
     height: 0
-});
-
-const offsetMousePosition = computed(() => {
-    let {px, py, qx, qy} = props.mousePositionData;
-    let bb = wrapper.value.getBoundingClientRect();
-    return {
-        px: Math.min(Math.max(px,bb.x), bb.x+bb.width) - bb.left,
-        py: Math.min(Math.max(py,bb.y), bb.y+bb.height) - bb.top,
-        qx: Math.min(qx, bb.x+bb.width) - bb.left,
-        qy: Math.min(qy, bb.y+bb.height) - bb.top
-    };
 });
 
 const calculateDims = function (width, height) {
@@ -120,7 +109,7 @@ const resize = function (width: number, height: number): void {
 }
 
 onUpdated(() => {
-    calculateDims(props.sourceImageWidth, props.sourceImageHeight);
+    // calculateDims(props.sourceImageWidth, props.sourceImageHeight);
 });
 
 onMounted(() => {
@@ -132,8 +121,8 @@ onMounted(() => {
 <style lang="scss" scoped>
 .canvas-wrapper {
     margin: 0 auto;
-    border: solid 1px black;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    // border: solid 1px black;
+    // box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
     position: relative;
     cursor: crosshair;
 }

@@ -12,6 +12,7 @@ import CropPreview from "./CropPreview.vue";
 import { sidebarWidth } from '@/variables';
 import InputText from "./InputText.vue";
 import Button from "./Button.vue";
+import Rulers from "./Rulers.vue";
 
 const dragging = ref(false);
 const dataLoaded = ref(false);
@@ -21,6 +22,8 @@ const canvasScaleFactor = ref(1.0);
 
 const mainView = ref(null);
 const canvasGroup = ref(null);
+
+const canvasGroupBb = ref(null);
 
 // const scaleFactor = ref(canvasG)
 
@@ -103,10 +106,12 @@ const dropHandler = function (e: DragEvent) {
 
 const onCanvasMounted = function () {
     canvasMounted.value = true;
+    canvasGroupBb.value = canvasGroup.value.wrapper.getBoundingClientRect();
 };
 
 const onCanvasResize = function (data) {
     canvasScaleFactor.value = data.scaleFactor;
+    canvasGroupBb.value = canvasGroup.value.wrapper.getBoundingClientRect();
 };
 
 
@@ -153,7 +158,7 @@ const mouseupHandler = function (e: MouseEvent) {
 </script>
 
 <template>
-    <div class="main-view" ref="mainView">
+    <div class="main-view bg-gray-50" ref="mainView">
         <div class="main-wrapper h-full w-full">
             <div class="sidebar border-r flex flex-col items-center py-6 space-y-6"
                 :style="{ 'minWidth': sidebarWidth + 'px' }">
@@ -182,17 +187,24 @@ const mouseupHandler = function (e: MouseEvent) {
             <!-- <div class="drop-target"></div> -->
             <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler" @dragleave="dragendHandler"
                 @mousedown="mousedownHandler" @mousemove="mousemoveHandler" @mouseup="mouseupHandler">
-                <CanvasGroup ref="canvasGroup" v-if="dataLoaded" @canvasMounted="onCanvasMounted"
-                    @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
-                    :sourceImageHeight="imageDims.height" :mousePositionData="offsetMousePosition" :dragging="clickDrag"
-                    :fileLoaded="fileLoaded" :dataLoaded="dataLoaded"></CanvasGroup>
-                <div v-else class="canvas-placeholder">
-                    <div class="crop-placeholder"></div>
-                    <h2 class="text-gray-500 tracking-tight" :class="{ 'dragging': dragging }">Drag an image</h2>
-                    <span class="upload-icon" :class="{ 'upload-icon-dragging': dragging }">
-                        <FontAwesomeIcon class="text-gray-500" icon="fa-solid fa-upload" size="6x"></FontAwesomeIcon>
-                    </span>
-                </div>
+                <Rulers :imageBb="canvasGroupBb"
+                :scaleFactor="canvasScaleFactor">
+                    <div class="canvas-section-wrapper">
+                        <CanvasGroup ref="canvasGroup" v-if="dataLoaded" @canvasMounted="onCanvasMounted"
+                            @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
+                            :sourceImageHeight="imageDims.height" :mousePositionData="offsetMousePosition"
+                            :dragging="clickDrag" :fileLoaded="fileLoaded" :dataLoaded="dataLoaded"></CanvasGroup>
+                        <div v-else class="canvas-placeholder">
+                            <div class="crop-placeholder"></div>
+                            <h2 class="text-gray-500 tracking-tight" :class="{ 'dragging': dragging }">Drag an image
+                            </h2>
+                            <span class="upload-icon" :class="{ 'upload-icon-dragging': dragging }">
+                                <FontAwesomeIcon class="text-gray-500" icon="fa-solid fa-upload" size="6x">
+                                </FontAwesomeIcon>
+                            </span>
+                        </div>
+                    </div>
+                </Rulers>
             </div>
         </div>
     </div>
@@ -227,7 +239,15 @@ const mouseupHandler = function (e: MouseEvent) {
 .content-wrapper {
     width: 100%;
     height: 100%;
-    padding: 40px 0;
+    // padding: 40px 0;
+    position: relative;
+}
+
+.canvas-section-wrapper {
+    width: 100%;
+    height: 100%;
+    // padding: 2rem;
+    padding: 50px;
 }
 
 .coords-wrapper {
