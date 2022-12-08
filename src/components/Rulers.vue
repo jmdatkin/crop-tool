@@ -71,7 +71,7 @@ const mod = function (n: number, m: number) {
     return ((n % m) + m) % m;
 }
 
-const drawMouseIndicator = function() {
+const drawMouseIndicator = function () {
     const ctxV = rulerVCanv.value.getContext('2d');
     const ctxH = rulerHCanv.value.getContext('2d');
 
@@ -81,9 +81,9 @@ const drawMouseIndicator = function() {
     let y = mousePos.y - appBarHeight - rulerSize;
 
     ctxV.beginPath();
-    ctxV.moveTo(0,y);
+    ctxV.moveTo(0, y);
     ctxV.lineTo(rulerSize, y);
-    
+
     ctxH.beginPath();
     ctxH.moveTo(x, 0);
     ctxH.lineTo(x, rulerSize);
@@ -96,22 +96,22 @@ const drawMouseIndicator = function() {
     ctxV.stroke();
 };
 
-const drawCropHighlightH = function() {
+const drawCropHighlightH = function () {
     const ctx = rulerHCanv.value.getContext('2d');
-    const grad = ctx.createLinearGradient(0,0,0,rulerSize);
-    grad.addColorStop(1,"#E0F2FE");
+    const grad = ctx.createLinearGradient(0, 0, 0, rulerSize);
+    grad.addColorStop(1, "#E0F2FE");
     // grad.addColorStop(0.6,"#E0F2FE");
     grad.addColorStop(0, "#BFDBFE");
     // ctx.fillStyle = "#E0F2FE";
     ctx.fillStyle = grad;
     ctx.fillRect(
-        props.mousePositionData.px - props.canvasGroupBb.left + sidebarWidth - rulerSize/2, 0, props.mousePositionData.qx - props.mousePositionData.px, rulerSize);
+        props.mousePositionData.px - props.canvasGroupBb.left + sidebarWidth - rulerSize / 2, 0, props.mousePositionData.qx - props.mousePositionData.px, rulerSize);
 };
 
-const drawCropHighlightV = function() {
+const drawCropHighlightV = function () {
     const ctx = rulerVCanv.value.getContext('2d');
-    const grad = ctx.createLinearGradient(0,0,rulerSize,0);
-    grad.addColorStop(1,"#E0F2FE");
+    const grad = ctx.createLinearGradient(0, 0, rulerSize, 0);
+    grad.addColorStop(1, "#E0F2FE");
     // grad.addColorStop(0.6,"#E0F2FE");
     grad.addColorStop(0, "#BFDBFE");
     // ctx.fillStyle = "#E0F2FE";
@@ -119,7 +119,7 @@ const drawCropHighlightV = function() {
     ctx.fillRect(0, props.mousePositionData.py - props.canvasGroupBb.top + appBarHeight, rulerSize, props.mousePositionData.qy - props.mousePositionData.py);
 };
 
-const clearRulerH = function() {
+const clearRulerH = function () {
     const ctx = rulerHCanv.value.getContext('2d');
     const { width, height } = rulerHCanv.value;
     ctx.clearRect(0, 0, width, height);
@@ -139,7 +139,7 @@ const drawRulerH = function () {
     const start = props.canvasGroupBb.left - sidebarWidth - rulerSize;
     const end = start + props.canvasGroupBb.width;
 
-    
+
     ctx.beginPath();
 
     let c = 4;
@@ -157,7 +157,7 @@ const drawRulerH = function () {
             ctx.fillText(text, i - textMeasure.width / 2, height);
             c = 0;
         } else {
-            if (d*props.scaleFactor < 10) continue;
+            if (d * props.scaleFactor < 10) continue;
             ctx.lineTo(i, height / 6);
             c++;
         }
@@ -168,7 +168,7 @@ const drawRulerH = function () {
     ctx.stroke();
 };
 
-const clearRulerV = function() {
+const clearRulerV = function () {
     const ctx = rulerVCanv.value.getContext('2d');
     const { width, height } = rulerVCanv.value;
     ctx.clearRect(0, 0, width, height);
@@ -238,31 +238,26 @@ const drawRulerV = function () {
     ctx.restore();
 };
 
-const draw = function() {
-        clearRulerH();
-        clearRulerV();
-        // drawCropHighlightH();
-        drawMouseIndicator();
-        drawRulerV();
-        drawRulerH();
+const draw = function () {
+    clearRulerH();
+    clearRulerV();
+    // drawCropHighlightH();
+    drawMouseIndicator();
+    drawRulerV();
+    drawRulerH();
 };
 
-const {start, stop} = useDraw(draw);
+const { start, stop } = useDraw(draw);
 
 onMounted(() => {
     initDims();
     // start();
 });
 
-let lastEvent = Date.now();
-let debounceTime = 20;
-const onMousemove = function(e: MouseEvent) {
-    let timeNow = Date.now();
-    if (timeNow-lastEvent < debounceTime) return;
+const onMousemove = function (e: MouseEvent) {
     if (props.canvasGroupBb === null) return;
     mousePos.x = e.pageX;
     mousePos.y = e.pageY;
-    lastEvent = timeNow;
 };
 </script>
 
@@ -277,7 +272,8 @@ const onMousemove = function(e: MouseEvent) {
             </div>
         </div>
         <div class="ruler-main">
-            <div class="ruler-v border-r border-gray-400 dark:border-zinc-700" ref="rulerV" :style="{ 'width': rulerSize + 'px' }">
+            <div class="ruler-v border-r border-gray-400 dark:border-zinc-700" ref="rulerV"
+                :style="{ 'width': rulerSize + 'px' }">
                 <canvas id="ruler-v-canv" ref="rulerVCanv"></canvas>
             </div>
             <div class="ruler-main-content">
