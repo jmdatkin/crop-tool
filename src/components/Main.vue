@@ -74,6 +74,7 @@ const loadImageObject = function (dataUrl: string) {
         imageDims.height = im.naturalHeight;
         imageObject.value = im;
 
+        selectionStore.update({x: 0, y: 0, w: 0, h: 0});
         dataLoaded.value = true;
     });
 };
@@ -203,11 +204,23 @@ const mousemoveHandler = function (e: MouseEvent) {
             });
 
         } else {
-            // let w = x2 - selectionStore.x;
-            // let h = y2 - selectionStore.y;
+
+            // Adjust if selection drawn backwards
+            if (dx < 0) {
+                dx = -dx;
+                x = ipos.px - dx
+            }
+            if (dy < 0) {
+                dy = -dy;
+                y = ipos.py - dy
+            };
+            
+
             selectionStore.update({
                 // w: w,
                 // h: h
+                x: x,
+                y: y,
                 w: dx,
                 h: dy
             });
