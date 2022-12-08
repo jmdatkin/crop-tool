@@ -4,6 +4,7 @@ import eventBus from '@/events';
 import { inject } from 'vue';
 import { sidebarWidth } from '@/variables';
 import InputSwitch from './InputSwitch.vue';
+import DarkModeSwitch from './DarkModeSwitch.vue';
 
 const { darkMode, updateDarkMode } = inject('dark-mode');
 
@@ -27,7 +28,7 @@ const onInputToggle = function(e: any) {
                 </div>
             </div>
             <div class="app-bar-end">
-                <InputSwitch class="dark:text-zinc-100" label="Poo" @change="onInputToggle"></InputSwitch>
+                <DarkModeSwitch></DarkModeSwitch>
             </div>
         </div>
     </div>
