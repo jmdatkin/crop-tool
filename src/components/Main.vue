@@ -17,6 +17,12 @@ import { transform } from "@vue/compiler-core";
 import { useSelectionStore } from "@/stores/selection";
 
 const dragging = ref(false);
+
+const drawing = ref(false);
+const draggingSelection = ref(false);
+
+const mouseInsideSelection = ref(false);
+
 const dataLoaded = ref(false);
 const fileLoaded = ref(false);
 const canvasMounted = ref(false);
@@ -53,7 +59,7 @@ const mousePositionData = reactive({
     qy: 0
 });
 
-const transformMouseX = function(x: number) {
+const transformMouseX = function (x: number) {
     if (dataLoaded.value && canvasMounted.value) {
         let canvasBb = canvasGroup.value.wrapper.getBoundingClientRect();
 
@@ -62,12 +68,17 @@ const transformMouseX = function(x: number) {
     else return x;
 };
 
-const transformMouseY = function(y: number) {
-if (dataLoaded.value && canvasMounted.value) {
+const transformMouseY = function (y: number) {
+    if (dataLoaded.value && canvasMounted.value) {
         let canvasBb = canvasGroup.value.wrapper.getBoundingClientRect();
         return Math.min(Math.max(canvasBb.top, y), canvasBb.top + canvasBb.height) - canvasBb.top;
     }
     else return y;
+};
+
+const posInQuad = function (p: number, q: number, x: number, y: number, w: number, h: number) {
+    return (p > x && p <= x + w &&
+        q > y && q <= y + h);
 };
 
 const loadImageObject = function (dataUrl: string) {
@@ -121,39 +132,113 @@ const dragendHandler = function (e: Event) {
     dragging.value = false;
 }
 
+// const ipos = ref({});
+const ipos = reactive({
+    px: 0,
+    py: 0,
+    qx: 0,
+    qy: 0,
+    ix: 0,
+    iy: 0
+});
+
 const mousedownHandler = function (e: MouseEvent) {
-    selectionStore.update({
-        x: transformMouseX(e.pageX),
-        y: transformMouseY(e.pageY),
-        w: 0,
-        h: 0
-    });
+    // let px = transformMouseX(e.pageX);
+    // let py = transformMouseY(e.pageY);
+    ipos.px = transformMouseX(e.pageX);
+    ipos.py = transformMouseY(e.pageY);
+
+    let x = selectionStore.x;
+    let y = selectionStore.y;
+    let w = selectionStore.w;
+    let h = selectionStore.h;
+
+    ipos.ix = x;
+    ipos.iy = y;
+
+    if (posInQuad(ipos.px, ipos.py, x, y, w, h))
+        mouseInsideSelection.value = true;
+
+    if (mouseInsideSelection.value) {
+        draggingSelection.value = true;
+        // ipos.value = Object.assign({}, selectionStore.pos);
+        // ox.value = px;
+        // oy.value = py;
+
+    } else {
+        drawing.value = true;
+        selectionStore.update({
+            // x: transformMouseX(e.pageX),
+            // y: transformMouseY(e.pageY),
+            x: ipos.px,
+            y: ipos.py,
+            w: 0,
+            h: 0
+        });
+    }
 
     clickDrag.value = false;
     mouseDown.value = true;
 };
 
 const mousemoveHandler = function (e: MouseEvent) {
-    let x2 = transformMouseX(e.pageX);
-    let y2 = transformMouseY(e.pageY);
+    let x = selectionStore.x;
+    let y = selectionStore.y;
+    let w = selectionStore.w;
+    let h = selectionStore.h;
 
-    let w = x2 - selectionStore.x;
-    let h = y2 - selectionStore.y;
+    if (canvasGroup.value !== null) {
+        if (drawing.value)
+            canvasGroup.value.wrapper.style.cursor = 'crosshair';
+        else if (draggingSelection.value)
+            canvasGroup.value.wrapper.style.cursor = 'grabbing';
+        else if (posInQuad(ipos.qx, ipos.qy, x, y, w, h))
+            canvasGroup.value.wrapper.style.cursor = 'grab';
+        else
+            canvasGroup.value.wrapper.style.cursor = 'crosshair';
+    }
+    // let x2 = transformMouseX(e.pageX);
+    // let y2 = transformMouseY(e.pageY);
+    ipos.qx = transformMouseX(e.pageX);
+    ipos.qy = transformMouseY(e.pageY);
 
-    if (w * w + h * h > 81 && mouseDown.value)
+    let dx = ipos.qx - ipos.px;
+    let dy = ipos.qy - ipos.py;
+
+    if (dx * dx + dy * dy > 81 && mouseDown.value)
         clickDrag.value = true;
 
     if (clickDrag.value) {
-        selectionStore.update({
-            w: w,
-            h: h
-        });
+
+        if (mouseInsideSelection.value) {
+            // let w = x2 - selectionStore.x;
+            // let h = y2 - selectionStore.y;
+            selectionStore.update({
+                x: ipos.ix + dx,
+                y: ipos.iy + dy
+                // w: w,
+                // h: h
+            });
+
+        } else {
+            // let w = x2 - selectionStore.x;
+            // let h = y2 - selectionStore.y;
+            selectionStore.update({
+                // w: w,
+                // h: h
+                w: dx,
+                h: dy
+            });
+        }
     }
 };
 
 const mouseupHandler = function (e: MouseEvent) {
     clickDrag.value = false;
     mouseDown.value = false;
+    mouseInsideSelection.value = false;
+    drawing.value = false;
+    draggingSelection.value = false;
 };
 
 </script>
@@ -165,9 +250,8 @@ const mouseupHandler = function (e: MouseEvent) {
                 :style="{ 'minWidth': sidebarWidth + 'px' }">
                 <div class="sidebar-container flex flex-col items-start space-y-6">
                     <ToolbarItem title="Preview">
-                        <CropPreview :sourceImage="imageObject"
-                            :sourceImageWidth="imageDims.width" :sourceImageHeight="imageDims.height"
-                            :scaleFactor="canvasScaleFactor"></CropPreview>
+                        <CropPreview :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
+                            :sourceImageHeight="imageDims.height" :scaleFactor="canvasScaleFactor"></CropPreview>
                     </ToolbarItem>
                     <ToolbarItem title="Coords">
                         <div class="coords-wrapper">
@@ -183,13 +267,12 @@ const mouseupHandler = function (e: MouseEvent) {
             </div>
             <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler" @dragleave="dragendHandler"
                 @mousedown="mousedownHandler" @mousemove="mousemoveHandler" @mouseup="mouseupHandler">
-                <Rulers :canvasGroupBb="canvasGroupBb" :imageDims="imageDims" :scaleFactor="canvasScaleFactor"
-                >
+                <Rulers :canvasGroupBb="canvasGroupBb" :imageDims="imageDims" :scaleFactor="canvasScaleFactor">
                     <div class="canvas-section-wrapper">
                         <CanvasGroup ref="canvasGroup" v-if="dataLoaded" @canvasMounted="onCanvasMounted"
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
-                            :sourceImageHeight="imageDims.height" 
-                            :dragging="clickDrag" :fileLoaded="fileLoaded" :dataLoaded="dataLoaded"></CanvasGroup>
+                            :sourceImageHeight="imageDims.height" :dragging="clickDrag" :fileLoaded="fileLoaded"
+                            :dataLoaded="dataLoaded"></CanvasGroup>
                         <div v-else class="canvas-placeholder">
                             <div class="crop-placeholder"></div>
                             <h2 class="text-gray-500 tracking-tight" :class="{ 'dragging': dragging }">Drag an image
