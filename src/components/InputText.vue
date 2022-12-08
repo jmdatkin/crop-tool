@@ -5,14 +5,14 @@ defineProps(['modelValue']);
 
 <template>
     <div class="inputtext">
-        <input class="border border-gray-500 focus:shadow-inner focus:shadow-slate-500/20 focus:outline-none"  :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" />
+        <input class="border rounded border-gray-500 text-black dark:bg-zinc-800 dark:text-zinc-50 dark:border-zinc-700 focus:shadow-inner focus:shadow-slate-500/20 focus:outline-none"  :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" />
     </div>
 </template>
 
 <style scoped lang="scss">
 
 input {
-    padding: 7px;
+    padding: 7px 9px;
     min-width: 0;
     max-width: 100%;
 }

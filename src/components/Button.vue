@@ -3,7 +3,7 @@ defineProps(['label'])
 </script>
 
 <template>
-    <button class="croppy-button bg-blue-500 p-3 rounded drop-shadow text-white hover:shadow active:ring">{{label}}</button>
+    <button class="croppy-button bg-blue-500 p-3 rounded shadow text-white hover:shadow active:ring">{{label}}</button>
 </template>
 
 <style scoped lang="scss">

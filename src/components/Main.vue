@@ -194,9 +194,9 @@ const mouseupHandler = function (e: MouseEvent) {
 </script>
 
 <template>
-    <div class="main-view bg-gray-50" ref="mainView">
+    <div class="main-view bg-gray-50 dark:bg-zinc-800 dark:text-zinc-50" ref="mainView">
         <div class="main-wrapper h-full w-full">
-            <div class="sidebar border-r flex flex-col items-center py-6 space-y-6"
+            <div class="sidebar border-r flex flex-col items-center py-6 space-y-6 bg-white dark:bg-zinc-800 dark:border-zinc-700"
                 :style="{ 'minWidth': sidebarWidth + 'px' }">
                 <div class="sidebar-container flex flex-col items-start space-y-6">
                     <ToolbarItem title="Preview">

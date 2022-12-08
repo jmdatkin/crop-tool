@@ -4,7 +4,7 @@ defineProps(['title']);
 
 <template>
     <div class="toolbar-item">
-        <span class="toolbar-item-label font-medium text-slate-600">
+        <span class="toolbar-item-label font-medium">
             {{ title }}
         </span>
         <div class="toolbar-item-content">

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type MousePositionData from '@/types/MousePositionData';
+import colors from 'tailwindcss/colors';
 import { rulerSize, sidebarWidth, appBarHeight } from '@/variables';
-import { createTextVNode, onMounted, onUpdated, reactive, ref, watch } from 'vue';
+import { createTextVNode, inject, onMounted, onUpdated, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
     canvasGroupBb: DOMRect,
@@ -9,6 +10,24 @@ const props = defineProps<{
     scaleFactor: number,
     mousePositionData: MousePositionData
 }>();
+
+// const bgColor = "";
+// const darkBgColor = "";
+
+// const borderColor = "";
+// const darkBorderColor = "";
+
+const textColor = 'black';
+const darkTextColor = colors.zinc[50];
+
+const tickColor = 'black';
+const darkTickColor = colors.zinc[50];
+
+const { darkMode } = inject('dark-mode');
+
+
+const mouseIndicatorColor = "#3B82F6";
+
 
 const rulerH = ref(null);
 const rulerHCanv = ref(null);
@@ -35,7 +54,7 @@ onMounted(() => {
     initDims();
 });
 
-watch(mousePos, () => {
+watch([mousePos, darkMode], () => {
 
         clearRulerH();
         clearRulerV();
@@ -65,9 +84,7 @@ const drawMouseIndicator = function() {
     const ctxV = rulerVCanv.value.getContext('2d');
     const ctxH = rulerHCanv.value.getContext('2d');
 
-    let color = "#3B82F6";
-    let bgColor = "#BFDBFE";
-
+    let color = mouseIndicatorColor;
 
     let x = mousePos.x - sidebarWidth - rulerSize;
     let y = mousePos.y - appBarHeight - rulerSize;
@@ -80,19 +97,12 @@ const drawMouseIndicator = function() {
     ctxH.moveTo(x, 0);
     ctxH.lineTo(x, rulerSize);
 
-    // ctxV.strokeStyle = bgColor;
-    // ctxV.lineWidth = 4;
-    // ctxH.strokeStyle = bgColor;
-    // ctxH.lineWidth = 4;
-    // ctxV.stroke();
-    // ctxH.stroke();
-
     ctxV.strokeStyle = color;
-    ctxV.lineWidth = 1;
+    ctxV.lineWidth = 2;
     ctxH.strokeStyle = color;
-    ctxH.lineWidth = 1;
-    ctxV.stroke();
+    ctxH.lineWidth = 2;
     ctxH.stroke();
+    ctxV.stroke();
 };
 
 const drawCropHighlightH = function() {
@@ -138,7 +148,6 @@ const drawRulerH = function () {
     const start = props.canvasGroupBb.left - sidebarWidth - rulerSize;
     const end = start + props.canvasGroupBb.width;
 
-    ctx.fillStyle = "#000";
     
     ctx.beginPath();
 
@@ -153,6 +162,7 @@ const drawRulerH = function () {
             ctx.lineTo(i, height / 4);
             const textMeasure = ctx.measureText(text);
             if (d * props.scaleFactor < 20 && idx < ticks.length - 1) continue;
+            ctx.fillStyle = darkMode.value ? darkTextColor : textColor;
             ctx.fillText(text, i - textMeasure.width / 2, height);
             c = 0;
         } else {
@@ -163,7 +173,7 @@ const drawRulerH = function () {
     }
 
     ctx.lineWidth = 1;
-    ctx.strokeStyle = '#000';
+    ctx.strokeStyle = darkMode.value ? darkTickColor : tickColor;
     ctx.stroke();
 };
 
@@ -192,12 +202,11 @@ const drawRulerV = function () {
 
     ctx.textBaseline = "bottom";
     ctx.font = "Inter 9px";
-    ctx.fillText("Test", 0, 0);
 
     const start = -50;
     const end = rulerSize - props.canvasGroupBb.height - props.canvasGroupBb.top + 50;// - sidebarWidth - rulerSize;
 
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = darkMode.value ? darkTextColor : textColor;
     ctx.beginPath();
 
     let c = 4;
@@ -225,7 +234,7 @@ const drawRulerV = function () {
     // ctx.fillText(endText, end - endTextMeasure.width / 2, height);
 
     ctx.lineWidth = 1;
-    ctx.strokeStyle = '#000';
+    ctx.strokeStyle = darkMode.value ? darkTickColor : tickColor;
     ctx.stroke();
 
     // ctx.beginPath();
@@ -253,15 +262,15 @@ const onMousemove = function(e: MouseEvent) {
 <template>
     <div class="ruler-container" @mousemove="onMousemove">
         <div class="ruler-top" :style="{ 'height': rulerSize + 'px' }">
-            <div class="ruler-corner border-b border-r border-gray-400"
+            <div class="ruler-corner border-b border-r border-gray-400 dark:border-zinc-700"
                 :style="{ 'min-height': rulerSize + 'px', 'min-width': rulerSize + 'px' }">
             </div>
-            <div class="ruler-h border-b border-gray-400" ref="rulerH">
+            <div class="ruler-h border-b border-gray-400 dark:border-zinc-700" ref="rulerH">
                 <canvas id="ruler-h-canv" ref="rulerHCanv"></canvas>
             </div>
         </div>
         <div class="ruler-main">
-            <div class="ruler-v border-r border-gray-400" ref="rulerV" :style="{ 'width': rulerSize + 'px' }">
+            <div class="ruler-v border-r border-gray-400 dark:border-zinc-700" ref="rulerV" :style="{ 'width': rulerSize + 'px' }">
                 <canvas id="ruler-v-canv" ref="rulerVCanv"></canvas>
             </div>
             <div class="ruler-main-content">
