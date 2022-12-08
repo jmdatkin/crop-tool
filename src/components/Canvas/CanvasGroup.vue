@@ -11,7 +11,6 @@
             <OverlayCanvas v-if="dataLoaded"
                 :width="canvasDims.width"
                 :height="canvasDims.height"
-                :mousePositionData="mousePositionData"
                 :dragging="props.dragging"
             ></OverlayCanvas>
         </div>
@@ -29,7 +28,6 @@ const props = defineProps<{
     sourceImage: HTMLImageElement | null,
     sourceImageWidth: Number,
     sourceImageHeight: Number,
-    mousePositionData: object,
     dragging: boolean,
     dataLoaded: boolean
 }>();

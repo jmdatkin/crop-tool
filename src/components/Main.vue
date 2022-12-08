@@ -70,56 +70,6 @@ if (dataLoaded.value && canvasMounted.value) {
     else return y;
 };
 
-const transformMousePosition = function (position) {
-    if (dataLoaded.value && canvasMounted.value) {
-        let canvasBb = canvasGroup.value.wrapper.getBoundingClientRect();
-        let mainViewBb = mainView.value.getBoundingClientRect();
-
-        let { px, py, qx, qy } = position;
-
-        // Swap x coords if drawn backwards horizontally
-        if (qx < px)
-            [px, qx] = [qx, px]
-
-        // Swap y coords if drawn backwards vertically
-        if (qy < py)
-            [py, qy] = [qy, py]
-
-        return {
-            px: Math.min(Math.max(canvasBb.left, px), canvasBb.left + canvasBb.width) - canvasBb.left,// - mainViewBb.left,
-            py: Math.min(Math.max(canvasBb.top, py), canvasBb.top + canvasBb.height) - canvasBb.top,// - mainViewBb.top,
-            qx: Math.min(Math.max(canvasBb.left, qx), canvasBb.left + canvasBb.width) - canvasBb.left,// - mainViewBb.left,
-            qy: Math.min(Math.max(canvasBb.top, qy), canvasBb.top + canvasBb.height) - canvasBb.top,// - mainViewBb.top,
-        };
-    }
-    else return position;
-};
-
-const offsetMousePosition = computed(() => {
-    if (dataLoaded.value && canvasMounted.value) {
-        let canvasBb = canvasGroup.value.wrapper.getBoundingClientRect();
-        let mainViewBb = mainView.value.getBoundingClientRect();
-
-        let { px, py, qx, qy } = mousePositionData;
-
-        // Swap x coords if drawn backwards horizontally
-        if (qx < px)
-            [px, qx] = [qx, px]
-
-        // Swap y coords if drawn backwards vertically
-        if (qy < py)
-            [py, qy] = [qy, py]
-
-        return {
-            px: Math.min(Math.max(canvasBb.left, px), canvasBb.left + canvasBb.width) - canvasBb.left,// - mainViewBb.left,
-            py: Math.min(Math.max(canvasBb.top, py), canvasBb.top + canvasBb.height) - canvasBb.top,// - mainViewBb.top,
-            qx: Math.min(Math.max(canvasBb.left, qx), canvasBb.left + canvasBb.width) - canvasBb.left,// - mainViewBb.left,
-            qy: Math.min(Math.max(canvasBb.top, qy), canvasBb.top + canvasBb.height) - canvasBb.top,// - mainViewBb.top,
-        };
-    }
-    else return mousePositionData;
-});
-
 const loadImageObject = function (dataUrl: string) {
     let im = new Image();
     im.src = dataUrl;
@@ -215,7 +165,7 @@ const mouseupHandler = function (e: MouseEvent) {
                 :style="{ 'minWidth': sidebarWidth + 'px' }">
                 <div class="sidebar-container flex flex-col items-start space-y-6">
                     <ToolbarItem title="Preview">
-                        <CropPreview :mousePositionData="offsetMousePosition" :sourceImage="imageObject"
+                        <CropPreview :sourceImage="imageObject"
                             :sourceImageWidth="imageDims.width" :sourceImageHeight="imageDims.height"
                             :scaleFactor="canvasScaleFactor"></CropPreview>
                     </ToolbarItem>
@@ -234,12 +184,11 @@ const mouseupHandler = function (e: MouseEvent) {
             <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler" @dragleave="dragendHandler"
                 @mousedown="mousedownHandler" @mousemove="mousemoveHandler" @mouseup="mouseupHandler">
                 <Rulers :canvasGroupBb="canvasGroupBb" :imageDims="imageDims" :scaleFactor="canvasScaleFactor"
-                :mousePositionData="mousePositionData"
                 >
                     <div class="canvas-section-wrapper">
                         <CanvasGroup ref="canvasGroup" v-if="dataLoaded" @canvasMounted="onCanvasMounted"
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
-                            :sourceImageHeight="imageDims.height" :mousePositionData="offsetMousePosition"
+                            :sourceImageHeight="imageDims.height" 
                             :dragging="clickDrag" :fileLoaded="fileLoaded" :dataLoaded="dataLoaded"></CanvasGroup>
                         <div v-else class="canvas-placeholder">
                             <div class="crop-placeholder"></div>
