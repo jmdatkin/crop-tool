@@ -35,15 +35,6 @@ const canvasGroup = ref(null);
 
 const canvasGroupBb = ref(null);
 
-// const scaleFactor = ref(canvasG)
-
-const offscreenCanvas: Ref<HTMLCanvasElement> = ref(document.createElement('canvas'));
-const offscreenImageData = computed(() => {
-    let { width, height } = offscreenCanvas.value;
-
-    return offscreenCanvas.value.getContext('2d')?.getImageData(0, 0, width, height) || null;
-});
-
 const imageObject: Ref<HTMLImageElement | null> = ref(null);
 const imageDims = reactive({
     width: 0,
@@ -52,18 +43,12 @@ const imageDims = reactive({
 
 const clickDrag = ref(false);
 const mouseDown = ref(false);
-const mousePositionData = reactive({
-    px: 0,
-    py: 0,
-    qx: 0,
-    qy: 0
-});
 
 const transformMouseX = function (x: number) {
     if (dataLoaded.value && canvasMounted.value) {
         let canvasBb = canvasGroup.value.wrapper.getBoundingClientRect();
 
-        return Math.min(Math.max(canvasBb.left, x), canvasBb.left + canvasBb.width) - canvasBb.left;
+        return Math.floor(Math.min(Math.max(canvasBb.left, x), canvasBb.left + canvasBb.width) - canvasBb.left);
     }
     else return x;
 };
@@ -71,7 +56,7 @@ const transformMouseX = function (x: number) {
 const transformMouseY = function (y: number) {
     if (dataLoaded.value && canvasMounted.value) {
         let canvasBb = canvasGroup.value.wrapper.getBoundingClientRect();
-        return Math.min(Math.max(canvasBb.top, y), canvasBb.top + canvasBb.height) - canvasBb.top;
+        return Math.floor(Math.min(Math.max(canvasBb.top, y), canvasBb.top + canvasBb.height) - canvasBb.top);
     }
     else return y;
 };
@@ -89,9 +74,6 @@ const loadImageObject = function (dataUrl: string) {
         imageDims.height = im.naturalHeight;
         imageObject.value = im;
 
-        offscreenCanvas.value.width = imageDims.width;
-        offscreenCanvas.value.height = imageDims.height;
-        offscreenCanvas.value.getContext('2d')?.drawImage(imageObject.value as CanvasImageSource, 0, 0);
         dataLoaded.value = true;
     });
 };
@@ -253,12 +235,12 @@ const mouseupHandler = function (e: MouseEvent) {
                         <CropPreview :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
                             :sourceImageHeight="imageDims.height" :scaleFactor="canvasScaleFactor"></CropPreview>
                     </ToolbarItem>
-                    <ToolbarItem title="Coords">
+                    <ToolbarItem>
                         <div class="coords-wrapper">
-                            <InputText v-model="mousePositionData.px"></InputText>
-                            <InputText v-model="mousePositionData.py"></InputText>
-                            <InputText v-model="mousePositionData.qx"></InputText>
-                            <InputText v-model="mousePositionData.qy"></InputText>
+                            <InputText label="Left" v-model="selectionStore.x"></InputText>
+                            <InputText label="Top" v-model="selectionStore.y"></InputText>
+                            <InputText label="Width" v-model="selectionStore.w"></InputText>
+                            <InputText label="Height" v-model="selectionStore.h"></InputText>
                         </div>
                     </ToolbarItem>
 
