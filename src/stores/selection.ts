@@ -12,7 +12,6 @@ export const useSelectionStore = defineStore('selection', {
     },
     actions: {
         update(params) {
-            console.log(params);
             if (typeof params.x !== 'undefined')
                 this._x = params.x;
             if (typeof params.y !== 'undefined')

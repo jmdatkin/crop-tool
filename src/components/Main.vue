@@ -172,7 +172,6 @@ const dragendHandler = function (e: Event) {
 }
 
 const mousedownHandler = function (e: MouseEvent) {
-
     selectionStore.update({
         x: transformMouseX(e.pageX),
         y: transformMouseY(e.pageY),
@@ -232,11 +231,6 @@ const mouseupHandler = function (e: MouseEvent) {
                     <Button label="Crop"></Button>
                 </div>
             </div>
-            <!-- <CollapsibleToolbar v-if="dataLoaded" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
-                :sourceImageHeight="imageDims.height" :mousePositionData="offsetMousePosition"
-                :scaleFactor="canvasScaleFactor"></CollapsibleToolbar> -->
-            <!-- <ProgressBar /> -->
-            <!-- <div class="drop-target"></div> -->
             <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler" @dragleave="dragendHandler"
                 @mousedown="mousedownHandler" @mousemove="mousemoveHandler" @mouseup="mouseupHandler">
                 <Rulers :canvasGroupBb="canvasGroupBb" :imageDims="imageDims" :scaleFactor="canvasScaleFactor"

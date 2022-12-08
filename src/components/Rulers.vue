@@ -3,6 +3,8 @@ import type MousePositionData from '@/types/MousePositionData';
 import colors from 'tailwindcss/colors';
 import { rulerSize, sidebarWidth, appBarHeight } from '@/variables';
 import { createTextVNode, inject, onMounted, onUpdated, reactive, ref, watch } from 'vue';
+import { useSelectionStore } from '@/stores/selection';
+import { useDraw } from '@/hooks';
 
 const props = defineProps<{
     canvasGroupBb: DOMRect,
@@ -11,11 +13,7 @@ const props = defineProps<{
     mousePositionData: MousePositionData
 }>();
 
-// const bgColor = "";
-// const darkBgColor = "";
-
-// const borderColor = "";
-// const darkBorderColor = "";
+const selectionStore = useSelectionStore();
 
 const textColor = 'black';
 const darkTextColor = colors.zinc[50];
@@ -50,29 +48,22 @@ const initDims = function () {
     rulerVCanv.value.height = parseInt(heightV, 10);
 };
 
-onMounted(() => {
-    initDims();
-});
 
-watch([mousePos, darkMode], () => {
+// watch([mousePos, darkMode], () => {
 
-        clearRulerH();
-        clearRulerV();
-        // drawCropHighlightH();
-        // drawCropHighlightV();
-        drawMouseIndicator();
-        drawRulerV();
-        drawRulerH();
-});
+//         clearRulerH();
+//         clearRulerV();
+//         // drawCropHighlightH();
+//         // drawCropHighlightV();
+//         drawMouseIndicator();
+//         drawRulerV();
+//         drawRulerH();
+// });
 
 watch(() => props.canvasGroupBb, () => {
     if (props.canvasGroupBb !== null) {
         initDims();
-        clearRulerH();
-        drawRulerH();
-        clearRulerV();
-        drawRulerV();
-        // drawMouseIndicator();
+        start();
     }
 });
 
@@ -246,6 +237,22 @@ const drawRulerV = function () {
 
     ctx.restore();
 };
+
+const draw = function() {
+        clearRulerH();
+        clearRulerV();
+        // drawCropHighlightH();
+        drawMouseIndicator();
+        drawRulerV();
+        drawRulerH();
+};
+
+const {start, stop} = useDraw(draw);
+
+onMounted(() => {
+    initDims();
+    // start();
+});
 
 let lastEvent = Date.now();
 let debounceTime = 20;

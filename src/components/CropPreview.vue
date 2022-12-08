@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useDraw } from '@/hooks';
 import { useSelectionStore } from '@/stores/selection';
 import { onMounted, onUpdated, ref, watch } from 'vue';
 import type MousePositionData from '../types/MousePositionData';
@@ -7,7 +8,6 @@ const props = defineProps<{
     sourceImage: HTMLImageElement | null,
     sourceImageWidth: Number,
     sourceImageHeight: Number,
-    mousePositionData: MousePositionData,
     scaleFactor: number
 }>();
 
@@ -18,8 +18,6 @@ const wrapper = ref(null);
 const selectionStore = useSelectionStore();
 
 const calculateSize = function () {
-    // let { px, py, qx, qy } = props.mousePositionData;
-    // let {x, y, w, h} = selectionStore;
     let x = selectionStore.x;
     let y = selectionStore.y;
     let w = selectionStore.w;
@@ -37,10 +35,7 @@ const calculateSize = function () {
     let canvasRatio = canvasWidth / canvasHeight;
     let midX = canv.value.width / 2,
         midY = canv.value.height / 2;
-    // if (aspectRatio > 1)
-    //     ratio = cropWidth / canvasWidth;
-    // else
-    //     ratio = cropHeight / canvasHeight;
+
     if (aspectRatio > canvasRatio) {
         imageWidth = canvasWidth;
         imageHeight = canvasWidth/aspectRatio;
@@ -48,10 +43,6 @@ const calculateSize = function () {
         imageHeight = canvasHeight;
         imageWidth = canvasHeight*aspectRatio;
     }
-    // imageWidth = width / ratio;
-    // imageHeight = height / ratio;
-    // imageWidth = ratio / cropWidth;
-    // imageHeight = ratio / cropHeight;
 
     let imageMidX = imageWidth / 2,
         imageMidY = imageHeight / 2;
@@ -74,7 +65,6 @@ const clear = function () {
 };
 
 const drawImage = function () {
-
     let {sx,sy,sw,sh,dx,dy,dw,dh} = calculateSize();
 
     ctx.value.drawImage(props.sourceImage,
@@ -98,28 +88,6 @@ const drawBackground = function() {
     ctx.value.fillRect(0,0,canv.value.width,canv.value.height);
 }
 
-const iid = ref(null);
-const start = function () {
-    iid.value = window.requestAnimationFrame(loop);
-};
-
-let lastTime = Date.now();
-let fps = 1 / 60;
-const loop = function () {
-    let thisTime = Date.now();
-    if (thisTime - lastTime < fps) return;
-
-    draw();
-
-    window.requestAnimationFrame(loop);
-};
-
-const stop = function() {
-    if (iid.value)
-        window.cancelAnimationFrame(iid);
-};
-
-
 const draw = function () {
     clear();
     drawBackground();
@@ -127,6 +95,8 @@ const draw = function () {
     if (props.sourceImage)
         drawImage();
 };
+
+const {start, stop} = useDraw(draw);
 
 onMounted(() => {
     ctx.value = canv.value.getContext('2d');
@@ -137,9 +107,6 @@ onMounted(() => {
     canv.value.height = height;
     wrapper.value.style.width = `${width + 2}px`;
     wrapper.value.style.height = `${height + 2}px`;
-    // draw();
-    clear();
-    drawBackground();
     start();
 });
 
@@ -155,6 +122,5 @@ onMounted(() => {
 div.crop-preview-wrapper {
     width: 300px;
     height: 300px;
-    // border: solid 1px black;
 }
 </style>
