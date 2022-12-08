@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useSelectionStore } from '@/stores/selection';
 import { onMounted, onUpdated, ref, watch } from 'vue';
 import type MousePositionData from '../types/MousePositionData';
 
@@ -14,20 +15,25 @@ const canv = ref(null);
 const ctx = ref(null);
 const wrapper = ref(null);
 
-const calculateSize = function () {
-    let { px, py, qx, qy } = props.mousePositionData;
+const selectionStore = useSelectionStore();
 
-    px /= props.scaleFactor;
-    py /= props.scaleFactor;
-    qx /= props.scaleFactor;
-    qy /= props.scaleFactor;
+const calculateSize = function () {
+    // let { px, py, qx, qy } = props.mousePositionData;
+    // let {x, y, w, h} = selectionStore;
+    let x = selectionStore.x;
+    let y = selectionStore.y;
+    let w = selectionStore.w;
+    let h = selectionStore.h;
+
+    x /= props.scaleFactor;
+    y /= props.scaleFactor;
+    w /= props.scaleFactor;
+    h /= props.scaleFactor;
 
     let imageWidth, imageHeight, ratio = 1;
-    let cropWidth = qx - px,
-        cropHeight = qy - py;
     let canvasWidth = canv.value.width,
         canvasHeight = canv.value.height;
-    let aspectRatio = cropWidth / cropHeight;
+    let aspectRatio = w / h;
     let canvasRatio = canvasWidth / canvasHeight;
     let midX = canv.value.width / 2,
         midY = canv.value.height / 2;
@@ -51,10 +57,10 @@ const calculateSize = function () {
         imageMidY = imageHeight / 2;
 
     return { 
-        sx: px,
-        sy: py,
-        sw: qx - px,
-        sh: qy - py,
+        sx: x,
+        sy: y,
+        sw: w,
+        sh: h,
         dx: aspectRatio > canvasRatio ? 0 : midX - imageMidX,
         dy: aspectRatio <= canvasRatio ? 0 : midY - imageMidY,
         dw: imageWidth,
@@ -68,17 +74,8 @@ const clear = function () {
 };
 
 const drawImage = function () {
-    // let sx = px,
-    //     sy = py,
-    //     sw = qx - px,
-    //     sh = qy - py,
-    //     dx = midX - imageMidX,
-    //     dy = midY - imageMidY,
-    //     dw = imageWidth,
-    //     dh = imageHeight;
-    let {sx,sy,sw,sh,dx,dy,dw,dh} = calculateSize();
 
-    // console.dir({sx,sy,sw,sh,dx,dy,dw,dh});
+    let {sx,sy,sw,sh,dx,dy,dw,dh} = calculateSize();
 
     ctx.value.drawImage(props.sourceImage,
         sx,sy,sw,sh,dx,dy,dw,dh);
@@ -101,19 +98,35 @@ const drawBackground = function() {
     ctx.value.fillRect(0,0,canv.value.width,canv.value.height);
 }
 
+const iid = ref(null);
+const start = function () {
+    iid.value = window.requestAnimationFrame(loop);
+};
+
+let lastTime = Date.now();
+let fps = 1 / 60;
+const loop = function () {
+    let thisTime = Date.now();
+    if (thisTime - lastTime < fps) return;
+
+    draw();
+
+    window.requestAnimationFrame(loop);
+};
+
+const stop = function() {
+    if (iid.value)
+        window.cancelAnimationFrame(iid);
+};
+
+
 const draw = function () {
     clear();
     drawBackground();
-    drawImage();
+
+    if (props.sourceImage)
+        drawImage();
 };
-
-watch(props.mousePositionData, () => {
-    draw();
-});
-
-onUpdated(() => {
-    draw();
-});
 
 onMounted(() => {
     ctx.value = canv.value.getContext('2d');
@@ -127,6 +140,7 @@ onMounted(() => {
     // draw();
     clear();
     drawBackground();
+    start();
 });
 
 </script>

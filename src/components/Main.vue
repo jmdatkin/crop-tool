@@ -14,12 +14,15 @@ import InputText from "./InputText.vue";
 import Button from "./Button.vue";
 import Rulers from "./Rulers.vue";
 import { transform } from "@vue/compiler-core";
+import { useSelectionStore } from "@/stores/selection";
 
 const dragging = ref(false);
 const dataLoaded = ref(false);
 const fileLoaded = ref(false);
 const canvasMounted = ref(false);
 const canvasScaleFactor = ref(1.0);
+
+const selectionStore = useSelectionStore();
 
 const mainView = ref(null);
 const canvasGroup = ref(null);
@@ -49,6 +52,23 @@ const mousePositionData = reactive({
     qx: 0,
     qy: 0
 });
+
+const transformMouseX = function(x: number) {
+    if (dataLoaded.value && canvasMounted.value) {
+        let canvasBb = canvasGroup.value.wrapper.getBoundingClientRect();
+
+        return Math.min(Math.max(canvasBb.left, x), canvasBb.left + canvasBb.width) - canvasBb.left;
+    }
+    else return x;
+};
+
+const transformMouseY = function(y: number) {
+if (dataLoaded.value && canvasMounted.value) {
+        let canvasBb = canvasGroup.value.wrapper.getBoundingClientRect();
+        return Math.min(Math.max(canvasBb.top, y), canvasBb.top + canvasBb.height) - canvasBb.top;
+    }
+    else return y;
+};
 
 const transformMousePosition = function (position) {
     if (dataLoaded.value && canvasMounted.value) {
@@ -152,38 +172,34 @@ const dragendHandler = function (e: Event) {
 }
 
 const mousedownHandler = function (e: MouseEvent) {
-    let {px,py,qx,qy} = transformMousePosition({
-        px: e.pageX,
-        py: e.pageY,
 
-    })
-    mousePositionData.px = e.pageX;
-    mousePositionData.py = e.pageY;
-    mousePositionData.qx = e.pageX;
-    mousePositionData.qy = e.pageY;
+    selectionStore.update({
+        x: transformMouseX(e.pageX),
+        y: transformMouseY(e.pageY),
+        w: 0,
+        h: 0
+    });
+
     clickDrag.value = false;
     mouseDown.value = true;
 };
 
-let lastEvent = Date.now();
-let debounceTime = 10;
 const mousemoveHandler = function (e: MouseEvent) {
-    let timeNow = Date.now();
-    if (timeNow - lastEvent < debounceTime) return;
-    let qx = e.pageX;
-    let qy = e.pageY;
+    let x2 = transformMouseX(e.pageX);
+    let y2 = transformMouseY(e.pageY);
 
-    let dx = qx - mousePositionData.px;
-    let dy = qy - mousePositionData.py;
+    let w = x2 - selectionStore.x;
+    let h = y2 - selectionStore.y;
 
-    if (dx * dx + dy * dy > 81 && mouseDown.value)
+    if (w * w + h * h > 81 && mouseDown.value)
         clickDrag.value = true;
 
     if (clickDrag.value) {
-        mousePositionData.qx = qx;
-        mousePositionData.qy = qy;
+        selectionStore.update({
+            w: w,
+            h: h
+        });
     }
-    lastEvent = timeNow;
 };
 
 const mouseupHandler = function (e: MouseEvent) {
