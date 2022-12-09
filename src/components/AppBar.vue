@@ -48,9 +48,12 @@ const onInputToggle = function(e: any) {
     flex-direction: row;
     width: 100%;
     justify-content: space-between;
-    margin: 0 40px;
     place-items: center;
     padding: 5px 0;
+}
+
+.app-bar-start {
+    margin: 0 40px;
 }
 
 .app-bar-items > div {

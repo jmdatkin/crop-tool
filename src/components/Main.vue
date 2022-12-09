@@ -11,6 +11,7 @@ import Button from "./Button.vue";
 import Rulers from "./Rulers.vue";
 import { useSelectionStore } from "@/stores/selection";
 import type Quad from '@/types/Quad';
+import FileChooser from './FileChooser.vue';
 
 const draggingFile = ref(false);
 
@@ -102,6 +103,25 @@ const loadImageObject = function (dataUrl: string): void {
 };
 
 
+const fileUploadHandler = function (e: Event) {
+    let files = e.target.files;
+
+    if (files[0]) {
+        imageDataLoaded.value = false;
+        canvasMounted.value = false;
+        let item = files[0];
+
+        let fr = new FileReader();
+        console.log(item);
+
+
+
+        loadFile(item).then(url => {
+            loadImageObject(url);
+        }).catch(err => console.error(err));
+    }
+};
+
 const dropHandler = function (e: DragEvent) {
     e.preventDefault();
     draggingFile.value = false;
@@ -109,7 +129,7 @@ const dropHandler = function (e: DragEvent) {
     if (e.dataTransfer.items) {
         imageDataLoaded.value = false;
         canvasMounted.value = false;
-        let item = e.dataTransfer.items[0];
+        let item = e.dataTransfer.items[0].getAsFile();
 
         loadFile(item).then(url => {
             loadImageObject(url);
@@ -130,12 +150,12 @@ const onCanvasResize = function (data) {
 const dragHandler = function (e: Event) {
     e.preventDefault();
     draggingFile.value = true;
-}
+};
 
 const dragendHandler = function (e: Event) {
     e.preventDefault();
     draggingFile.value = false;
-}
+};
 
 const auxMouse = reactive({
     initialMousedownX: 0,
@@ -166,7 +186,7 @@ const mousedownHandler = function (e: MouseEvent) {
         draggingSelection.value = true;
     } else {
         drawingSelection.value = true;
-    
+
         selectionStore.x = auxMouse.initialMousedownX;
         selectionStore.y = auxMouse.initialMousedownY;
         selectionStore.w = 0;
@@ -211,13 +231,13 @@ const mousemoveHandler = function (e: MouseEvent) {
         if (mouseInsideSelection.value) {
             let newX = auxMouse.initialSelectionX + dx;
             let newY = auxMouse.initialSelectionY + dy;
-            
+
             //Snap to edge
             if (newX < snapRange)
                 newX = 0;
             if (newY < snapRange)
                 newY = 0;
-            if (canvasGroupBb.value.width - (newX + w)  < snapRange)
+            if (canvasGroupBb.value.width - (newX + w) < snapRange)
                 newX = canvasGroupBb.value.width - w;
             if (canvasGroupBb.value.height - (newY + h) < snapRange)
                 newY = canvasGroupBb.value.height - h;
@@ -225,7 +245,7 @@ const mousemoveHandler = function (e: MouseEvent) {
             selectionStore.x = newX;
             selectionStore.y = newY;
 
-        // Drawing new rectangle
+            // Drawing new rectangle
         } else {
 
             // Adjust if selection drawn backwards
@@ -285,15 +305,25 @@ const mouseupHandler = function (e: MouseEvent) {
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
                             :sourceImageHeight="imageDims.height" :dragging="clickDrag" :fileLoaded="imageFileLoaded"
                             :dataLoaded="imageDataLoaded"></CanvasGroup>
-                        <div v-else class="canvas-placeholder">
-                            <div class="crop-placeholder"></div>
-                            <h2 class="text-gray-500 tracking-tight" :class="{ 'dragging': draggingFile }">Drag an image
-                            </h2>
-                            <span class="upload-icon" :class="{ 'upload-icon-dragging': draggingFile }">
-                                <FontAwesomeIcon class="text-gray-500" icon="fa-solid fa-upload" size="6x">
-                                </FontAwesomeIcon>
-                            </span>
-                        </div>
+                        <FileChooser v-else :onFileSelect="fileUploadHandler">
+                            <template v-slot="{ doClick }">
+                                <div class="canvas-placeholder hover:cursor-pointer hover:text-gray-400" @click="doClick">
+                                    <div class="crop-placeholder"></div>
+                                    <h2 class="text-gray-500 tracking-tight" :class="{ 'dragging': draggingFile }">Drag
+                                        an
+                                        image
+                                    </h2>
+                                    <span class="upload-icon" v-if="draggingFile" :class="{ 'upload-icon-dragging': draggingFile }">
+                                        <FontAwesomeIcon class="text-gray-500" icon="fa-solid fa-upload" size="6x">
+                                        </FontAwesomeIcon>
+                                    </span>
+                                    <h2 class="text-gray-500 tracking-tight" v-else @click="doClick"
+                                        :class="{ 'dragging': draggingFile }">
+                                        or click to select file
+                                    </h2>
+                                </div>
+                            </template>
+                        </FileChooser>
                     </div>
                 </Rulers>
             </div>
@@ -350,7 +380,7 @@ const mouseupHandler = function (e: MouseEvent) {
 h2 {
     font-size: 48pt;
     margin-bottom: 4rem;
-    pointer-events: none;
+    // pointer-events: none;
 }
 
 .dragging {
@@ -383,6 +413,7 @@ div.crop-placeholder {
     width: 800px;
     height: 500px;
     position: absolute;
+    pointer-events: none;
 }
 
 @keyframes dragging {

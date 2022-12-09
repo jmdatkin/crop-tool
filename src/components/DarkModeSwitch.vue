@@ -20,7 +20,7 @@ const changeHandler = function (e: any) {
 <template>
     <span class="dark-mode-toggle">
         <button
-            class="p-1 rounded w-12 h-12 active:bg-zinc-200 text-zinc-600 hover:text-zinc-700 dark:text-zinc-700 active:dark:bg-zinc-700 active:dark:text-zinc-100 hover:dark:text-zinc-600 dark:border-zinc-700"
+            class="p-1 rounded w-12 h-12 active:bg-zinc-200 text-zinc-400 hover:text-zinc-500 active:text-zinc-700 dark:text-zinc-700 active:dark:bg-zinc-700 active:dark:text-zinc-100 hover:dark:text-zinc-600 dark:border-zinc-700"
             @click="clickHandler">
             <FontAwesomeIcon class="text-inherit" size="lg" v-if="checked" icon="fa-solid fa-moon" />
             <FontAwesomeIcon class="text-inherit" size="lg" v-else icon="fa-solid fa-sun" />

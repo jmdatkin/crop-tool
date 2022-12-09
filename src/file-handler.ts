@@ -1,11 +1,9 @@
-const loadFile = function (file: DataTransferItem) {
+const loadFile = function (file: File) {
     return loadImageFile(file);
 };
 
-const loadImageFile = function (image: DataTransferItem): Promise<string> {
+const loadImageFile = function (file: File): Promise<string> {
     let fr = new FileReader();
-    let im = new Image();
-    let file = image.getAsFile();
 
     let p = new Promise<string>(function (resolve) {
         fr.onload = () => {
