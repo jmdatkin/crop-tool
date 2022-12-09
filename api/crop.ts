@@ -3,15 +3,31 @@ import { trimDataURL } from '../src/util';
 import sharp from 'sharp';
 
 export default function handler (req: VercelRequest, res: VercelResponse) {
-    const { dataURL, x, y, w, h } = req.query;   
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    return res.send(dataURL);
+    const { dataURL, x, y, w, h } = JSON.parse(req.body);
 
-    // const b64 = trimDataURL(dataURL);
-    // const image = sharp(b64);
-    // image.resize({width: 100})
-    // .then(output => {
-    //     res.setHeader('Access-Control-Allow-Origin', '*');
-    //     res.se
-    //
+    const b64 = (dataURL as string).replace(/^data:image.+;base64,/, '');
+
+    const buffer = Buffer.from(b64, 'base64');
+
+    const image = sharp(buffer);
+    image.extract({
+        left: x,
+        top: y,
+        width: w,
+        height: h
+    })
+    // image.extract({
+    //     left: 0,
+    //     top: 0,
+    //     width: 100,
+    //     height: 200
+    // })
+    .jpeg({
+        quality: 100
+    })
+    .toBuffer()
+    .then(output => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.send(`data:image/jpeg;base64,${output.toString('base64')}`);
+    });
 };

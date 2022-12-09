@@ -1,6 +1,6 @@
 const cropImage = function(dataURL, selection) {
-    // fetch('/api/crop', {
-    fetch('https://croppy.vercel.app/api/crop', {
+    fetch('/api/crop', {
+    // fetch('https://croppy.vercel.app/api/crop', {
         method: 'POST',
         body: JSON.stringify({
             dataURL,
@@ -9,7 +9,7 @@ const cropImage = function(dataURL, selection) {
             w: selection.w,
             h: selection.h
         })
-    }).then(res => console.log(res));
+    }).then(res => res.text()).then(console.log);
 };
 
 export { cropImage };
