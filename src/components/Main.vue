@@ -12,6 +12,7 @@ import Rulers from "./Rulers.vue";
 import { useSelectionStore } from "@/stores/selection";
 import type Quad from '@/types/Quad';
 import FileChooser from './FileChooser.vue';
+import { cropImage } from '@/api-handler';
 
 const draggingFile = ref(false);
 
@@ -273,6 +274,10 @@ const mouseupHandler = function (e: MouseEvent) {
     drawingSelection.value = false;
     draggingSelection.value = false;
 };
+
+const crop = function() {
+    cropImage(imageObject.value?.src, selectionStore);
+};
 </script>
 
 <template>
@@ -294,7 +299,7 @@ const mouseupHandler = function (e: MouseEvent) {
                         </div>
                     </ToolbarItem>
 
-                    <Button label="Crop"></Button>
+                    <Button label="Crop" @click="crop"></Button>
                 </div>
             </div>
             <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler" @dragleave="dragendHandler"
