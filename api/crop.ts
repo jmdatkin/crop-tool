@@ -5,7 +5,7 @@ import sharp from 'sharp';
 export default function handler (req: VercelRequest, res: VercelResponse) {
     const { dataURL, x, y, w, h } = req.query;   
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.send(dataURL);
+    return res.send(dataURL);
 
     // const b64 = trimDataURL(dataURL);
     // const image = sharp(b64);
