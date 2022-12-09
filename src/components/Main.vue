@@ -177,6 +177,7 @@ const mousedownHandler = function (e: MouseEvent) {
     mouseDown.value = true;
 };
 
+const snapRange = 1;
 const mousemoveHandler = function (e: MouseEvent) {
     let x = selectionStore.x;
     let y = selectionStore.y;
@@ -208,8 +209,21 @@ const mousemoveHandler = function (e: MouseEvent) {
 
         // Moving existing rectangle
         if (mouseInsideSelection.value) {
-            selectionStore.x = auxMouse.initialSelectionX + dx;
-            selectionStore.y = auxMouse.initialSelectionY + dy;
+            let newX = auxMouse.initialSelectionX + dx;
+            let newY = auxMouse.initialSelectionY + dy;
+            
+            //Snap to edge
+            if (newX < snapRange)
+                newX = 0;
+            if (newY < snapRange)
+                newY = 0;
+            if (canvasGroupBb.value.width - (newX + w)  < snapRange)
+                newX = canvasGroupBb.value.width - w;
+            if (canvasGroupBb.value.height - (newY + h) < snapRange)
+                newY = canvasGroupBb.value.height - h;
+
+            selectionStore.x = newX;
+            selectionStore.y = newY;
 
         // Drawing new rectangle
         } else {
