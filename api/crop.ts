@@ -23,7 +23,7 @@ export default function handler (req: VercelRequest, res: VercelResponse) {
     //     height: 200
     // })
     .jpeg({
-        quality: 100
+        quality: 75
     })
     .toBuffer()
     .then(output => {

@@ -13,6 +13,7 @@ import { useSelectionStore } from "@/stores/selection";
 import type Quad from '@/types/Quad';
 import FileChooser from './FileChooser.vue';
 import { cropImage } from '@/api-handler';
+import ImageEntry from './ImageEntry.vue';
 
 const draggingFile = ref(false);
 
@@ -41,6 +42,8 @@ const imageDims = reactive({
 
 const clickDrag = ref(false);
 const mouseDown = ref(false);
+
+const images = ref([]);
 
 /**
  * Subtracts canvas element horizontal offset from mouse position
@@ -276,7 +279,12 @@ const mouseupHandler = function (e: MouseEvent) {
 };
 
 const crop = function() {
-    cropImage(imageObject.value?.src, selectionStore);
+    cropImage(imageObject.value?.src, {
+        x: Math.floor(selectionStore.x/canvasScaleFactor.value),
+        y: Math.floor(selectionStore.y/canvasScaleFactor.value),
+        w: Math.floor(selectionStore.w/canvasScaleFactor.value),
+        h: Math.floor(selectionStore.h/canvasScaleFactor.value)
+    }).then(im => images.value.push(im));
 };
 </script>
 
@@ -300,12 +308,14 @@ const crop = function() {
                     </ToolbarItem>
 
                     <Button label="Crop" @click="crop"></Button>
+                    
+                    <ImageEntry v-for="image in images" :dataURL="image.src" />
                 </div>
             </div>
             <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler" @dragleave="dragendHandler"
                 @mousedown="mousedownHandler" @mousemove="mousemoveHandler" @mouseup="mouseupHandler">
                 <Rulers :canvasGroupBb="canvasGroupBb" :imageDims="imageDims" :scaleFactor="canvasScaleFactor">
-                    <div class="canvas-section-wrapper">
+                    <div class="canvas-section-wrapper dark:bg-zinc-900">
                         <CanvasGroup ref="canvasGroup" v-if="imageDataLoaded" @canvasMounted="onCanvasMounted"
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
                             :sourceImageHeight="imageDims.height" :dragging="clickDrag" :fileLoaded="imageFileLoaded"

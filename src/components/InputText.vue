@@ -6,13 +6,13 @@ defineProps(['label', 'modelValue']);
 <template>
     <div class="inputtext">
         <label v-if="label">
-            {{ label }}
+            <span>{{ label }}</span>
             <input
-                class="border rounded border-gray-500 text-black dark:bg-zinc-800 dark:text-zinc-50 dark:border-zinc-700 focus:shadow-inner focus:shadow-slate-500/20 focus:outline-none"
+                class="border rounded border-gray-500 text-black dark:bg-zinc-800 dark:text-zinc-50 dark:border-zinc-700 focus:outline-none"
                 :value="modelValue" @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)" />
         </label>
         <input v-else
-            class="border rounded border-gray-500 text-black dark:bg-zinc-800 dark:text-zinc-50 dark:border-zinc-700 focus:shadow-inner focus:shadow-slate-500/20 focus:outline-none"
+            class="border rounded border-gray-500 text-black dark:bg-zinc-800 dark:text-zinc-50 dark:border-zinc-700  focus:outline-none"
             :value="modelValue" @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)" />
     </div>
 </template>
