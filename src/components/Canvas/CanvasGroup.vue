@@ -1,6 +1,9 @@
 <template>
     <div class="workspace" ref="workspace">
         <div ref="wrapper" class="canvas-wrapper border-slate-700 shadow-lg" :class="{'wrapper-data-loaded': dataLoaded}" >
+            <div class="wrapper-children w-full h-full absolute">
+                <slot></slot>
+            </div>
             <ImageCanvas v-if="dataLoaded"
                 :width="canvasDims.width"
                 :height="canvasDims.height"

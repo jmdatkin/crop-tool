@@ -28,6 +28,11 @@ export default function handler (req: VercelRequest, res: VercelResponse) {
     .toBuffer()
     .then(output => {
         res.setHeader('Access-Control-Allow-Origin', '*');
-        res.send(`data:image/jpeg;base64,${output.toString('base64')}`);
+        // res.send(`data:image/jpeg;base64,${output.toString('base64')}`);
+        res.json({
+            src: `data:image/jpeg;base64,${output.toString('base64')}`,
+            width: w,
+            height: h
+        });
     });
 };

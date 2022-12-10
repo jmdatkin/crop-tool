@@ -145,7 +145,7 @@ const drawRulerH = function () {
     let c = 4;
     for (let [idx, tick] of ticks.entries()) {
         let text = `${tick}`;
-        let i = tick * props.scaleFactor + start
+        let i = Math.floor(tick * props.scaleFactor + start)-0.5;
         let d = Math.abs(tick - ticks[ticks.length - 1])
         ctx.moveTo(i, 0);
         if (c >= 4 || idx == ticks.length - 1) {
@@ -187,7 +187,6 @@ const drawRulerV = function () {
     ticks.push(props.imageDims.height);
 
     ctx.save();
-    ctx.translate(0.5, 0.5);
 
     ctx.rotate(3 * Math.PI / 2);
 
@@ -203,7 +202,7 @@ const drawRulerV = function () {
     let c = 4;
     for (let [idx, tick] of ticks.entries()) {
         let text = tick;
-        let i = -tick * props.scaleFactor + start
+        let i = Math.floor(-tick * props.scaleFactor + start) - 0.5;
         let d = Math.abs(tick - ticks[ticks.length - 1])
         ctx.moveTo(i, 0);
         if (c >= 4 || idx == ticks.length - 1) {
@@ -251,6 +250,11 @@ const { start, stop } = useDraw(draw);
 
 onMounted(() => {
     initDims();
+    const ctxV = rulerVCanv.value.getContext('2d');
+    const ctxH = rulerHCanv.value.getContext('2d');
+    ctxV.translate(0.5, 0.5);
+    ctxH.translate(0.5, 0.5);
+
     // start();
 });
 

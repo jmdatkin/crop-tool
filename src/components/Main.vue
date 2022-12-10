@@ -34,6 +34,8 @@ const mainView = ref(null);
 const canvasGroup: Ref<HTMLDivElement | null> = ref(null);
 const canvasGroupBb = ref(null);
 
+const loadedImages = ref([]);
+
 const imageObject: Ref<HTMLImageElement | null> = ref(null);
 const imageDims = reactive({
     width: 0,
@@ -42,6 +44,8 @@ const imageDims = reactive({
 
 const clickDrag = ref(false);
 const mouseDown = ref(false);
+
+const cropFlashEffect = ref(false);
 
 const images = ref([]);
 
@@ -96,6 +100,7 @@ const loadImageObject = function (dataUrl: string): void {
         imageDims.width = im.naturalWidth;
         imageDims.height = im.naturalHeight;
         imageObject.value = im;
+        loadedImages.value.push(im);
 
         selectionStore.x = 0;
         selectionStore.y = 0;
@@ -116,9 +121,6 @@ const fileUploadHandler = function (e: Event) {
         let item = files[0];
 
         let fr = new FileReader();
-        console.log(item);
-
-
 
         loadFile(item).then(url => {
             loadImageObject(url);
@@ -278,12 +280,21 @@ const mouseupHandler = function (e: MouseEvent) {
     draggingSelection.value = false;
 };
 
-const crop = function() {
+const doCropFlashEffect = function () {
+    cropFlashEffect.value = true;
+    setTimeout(() => {
+        cropFlashEffect.value = false;
+    }, 1000);
+};
+
+const crop = function () {
+    doCropFlashEffect();
+    return;
     cropImage(imageObject.value?.src, {
-        x: Math.floor(selectionStore.x/canvasScaleFactor.value),
-        y: Math.floor(selectionStore.y/canvasScaleFactor.value),
-        w: Math.floor(selectionStore.w/canvasScaleFactor.value),
-        h: Math.floor(selectionStore.h/canvasScaleFactor.value)
+        x: Math.floor(selectionStore.x / canvasScaleFactor.value),
+        y: Math.floor(selectionStore.y / canvasScaleFactor.value),
+        w: Math.floor(selectionStore.w / canvasScaleFactor.value),
+        h: Math.floor(selectionStore.h / canvasScaleFactor.value)
     }).then(im => images.value.push(im));
 };
 </script>
@@ -308,7 +319,7 @@ const crop = function() {
                     </ToolbarItem>
 
                     <Button label="Crop" @click="crop"></Button>
-                    
+
                     <ImageEntry v-for="image in images" :dataURL="image.src" />
                 </div>
             </div>
@@ -319,16 +330,23 @@ const crop = function() {
                         <CanvasGroup ref="canvasGroup" v-if="imageDataLoaded" @canvasMounted="onCanvasMounted"
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
                             :sourceImageHeight="imageDims.height" :dragging="clickDrag" :fileLoaded="imageFileLoaded"
-                            :dataLoaded="imageDataLoaded"></CanvasGroup>
+                            :dataLoaded="imageDataLoaded">
+                     
+                        <div :class="{ 'flashing': cropFlashEffect }"
+                            class="crop-flash-overlay w-full h-full pointer-events-none absolute">
+                        </div>
+                        </CanvasGroup>
                         <FileChooser v-else :onFileSelect="fileUploadHandler">
                             <template v-slot="{ doClick }">
-                                <div class="canvas-placeholder hover:cursor-pointer hover:text-gray-400" @click="doClick">
+                                <div class="canvas-placeholder hover:cursor-pointer hover:text-gray-400"
+                                    @click="doClick">
                                     <div class="crop-placeholder"></div>
                                     <h2 class="text-gray-500 tracking-tight" :class="{ 'dragging': draggingFile }">Drag
                                         an
                                         image
                                     </h2>
-                                    <span class="upload-icon" v-if="draggingFile" :class="{ 'upload-icon-dragging': draggingFile }">
+                                    <span class="upload-icon" v-if="draggingFile"
+                                        :class="{ 'upload-icon-dragging': draggingFile }">
                                         <FontAwesomeIcon class="text-gray-500" icon="fa-solid fa-upload" size="6x">
                                         </FontAwesomeIcon>
                                     </span>
@@ -422,6 +440,18 @@ span.upload-icon.upload-icon-dragging {
     justify-content: center;
 }
 
+div.crop-flash-overlay {
+    background-color: rgba(255,255,255, 0.35);
+    opacity: 0;
+    z-index: 999;
+    // transition: opacity 0.5s ease-out;
+}
+
+div.crop-flash-overlay.flashing {
+    animation: flash 0.5s normal cubic-bezier(0.73, 0.26, 0.33, 0.76)
+    // opacity: 1;
+}
+
 div.crop-placeholder {
     background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='19' ry='19' stroke='%23D4D4D4FF' stroke-width='6' stroke-dasharray='6%2c 14' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
     border-radius: 19px;
@@ -462,6 +492,16 @@ div.crop-placeholder {
     to {
         transform: translateY(0);
         opacity: 1
+    }
+}
+
+@keyframes flash {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
     }
 }
 </style>

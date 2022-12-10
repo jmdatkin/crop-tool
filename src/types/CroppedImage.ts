@@ -1,7 +1,11 @@
 type CroppedImage = {
     dataURL: string,
     filename: string,
-    type: string,
+    metadata:  {
+        width: number,
+        height: number,
+        type: string,
+    }
 };
 
 export default CroppedImage;
