@@ -314,7 +314,7 @@ const crop = function () {
 <template>
     <div class="main-view bg-gray-50 dark:bg-zinc-800 dark:text-zinc-50" ref="mainView">
         <div class="main-wrapper h-full w-full">
-            <div class="sidebar sidebar-left border-r flex flex-col items-start p-6 space-y-6 bg-white dark:bg-zinc-800 dark:border-zinc-700"
+            <div class="sidebar hidden lg:block sidebar-left border-r flex flex-col items-start p-6 space-y-6 bg-white dark:bg-zinc-800 dark:border-zinc-700"
                 :style="{ 'minWidth': sidebarWidth + 'px' }">
                 <div class="sidebar-container flex flex-col items-start space-y-6">
                     <ToolbarItem title="Preview">
@@ -349,7 +349,7 @@ const crop = function () {
             <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler" @dragleave="dragendHandler"
                 @mousedown="mousedownHandler" @mousemove="mousemoveHandler" @mouseup="mouseupHandler">
                 <Rulers :canvasGroupBb="canvasGroupBb" :imageDims="imageDims" :scaleFactor="canvasScaleFactor">
-                    <div class="canvas-section-wrapper dark:bg-zinc-900">
+                    <div class="canvas-section-wrapper dark:bg-zinc-900 lg:p-6">
                         <CanvasGroup ref="canvasGroup" v-if="imageDataLoaded" @canvasMounted="onCanvasMounted"
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
                             :sourceImageHeight="imageDims.height" :dragging="clickDrag" :fileLoaded="imageFileLoaded"
@@ -383,7 +383,7 @@ const crop = function () {
                     </div>
                 </Rulers>
             </div>
-            <div class="sidebar sidebar-right border-l flex flex-col items-center space-y-6 bg-white dark:bg-zinc-800 dark:border-zinc-700"
+            <div class="sidebar hidden lg:block sidebar-right border-l flex flex-col items-center space-y-6 bg-white dark:bg-zinc-800 dark:border-zinc-700"
                 :style="{ 'minWidth': sidebarWidth + 'px' }">
                 <div class="sidebar-container flex flex-col items-start w-full">
                     <!-- <ToolbarItem title="Preview">
@@ -444,7 +444,7 @@ const crop = function () {
     width: 100%;
     height: 100%;
     // padding: 2rem;
-    padding: 50px;
+    // padding: 50px;
 }
 
 .coords-wrapper {
