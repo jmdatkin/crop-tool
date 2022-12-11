@@ -1,6 +1,6 @@
 import { useImageStore } from "./stores/images";
 
-const cropImage = function (dataURL, selection): Promise<HTMLImageElement> {
+const cropImage = function (dataURL, selection): Promise<string> {
     return new Promise((resolve, reject) => {
         fetch('/api/crop', {
             // fetch('https://croppy.vercel.app/api/crop', {
@@ -13,9 +13,10 @@ const cropImage = function (dataURL, selection): Promise<HTMLImageElement> {
                 h: selection.h
             })
         }).then(res => res.text()).then(img => {
-            let im = new Image();
-            im.src = img;
-            im.decode().then(resolve(im));
+            // let im = new Image();
+            // im.src = img;
+            // im.decode().then(resolve(im));
+            resolve(img);
             // im.decode().then(() => {
             // })
             // imageStore.images.push(im);

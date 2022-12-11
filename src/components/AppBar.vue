@@ -31,6 +31,8 @@ const onInputToggle = function(e: any) {
                 <DarkModeSwitch></DarkModeSwitch>
             </div>
         </div>
+        <div class="app-bar-sidebar-spacer border-l dark:border-zinc-700" :style="{ 'min-width': sidebarWidth + 'px' }">
+        </div>
     </div>
 </template>
 

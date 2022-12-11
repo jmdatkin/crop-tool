@@ -54,6 +54,7 @@ const canvasDims = reactive({
 
 const calculateDims = function (width, height) {
     let workspaceBb: DOMRect = workspace.value.getBoundingClientRect();
+    console.log(workspaceBb);
     let workspaceWidth = workspaceBb.width;
     let workspaceHeight = workspaceBb.height;
 
@@ -139,7 +140,7 @@ onMounted(() => {
     max-width: 1600px;
     width: 100%;
     height: 100%;
-    margin: 0 auto;
+    // margin: 0 auto;
 }
 
 

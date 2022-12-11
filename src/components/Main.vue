@@ -14,6 +14,8 @@ import type Quad from '@/types/Quad';
 import FileChooser from './FileChooser.vue';
 import { cropImage } from '@/api-handler';
 import ImageEntry from './ImageEntry.vue';
+import SidebarSection from './SidebarSection.vue';
+import ImageLibraryList from './ImageLibraryList.vue';
 
 const draggingFile = ref(false);
 
@@ -273,6 +275,13 @@ const mousemoveHandler = function (e: MouseEvent) {
 };
 
 const mouseupHandler = function (e: MouseEvent) {
+    if (!clickDrag.value) {
+        selectionStore.x = 0;
+        selectionStore.y = 0;
+        selectionStore.w = 0;
+        selectionStore.h = 0;
+    }
+
     clickDrag.value = false;
     mouseDown.value = false;
     mouseInsideSelection.value = false;
@@ -289,20 +298,23 @@ const doCropFlashEffect = function () {
 
 const crop = function () {
     doCropFlashEffect();
-    return;
-    cropImage(imageObject.value?.src, {
-        x: Math.floor(selectionStore.x / canvasScaleFactor.value),
-        y: Math.floor(selectionStore.y / canvasScaleFactor.value),
-        w: Math.floor(selectionStore.w / canvasScaleFactor.value),
-        h: Math.floor(selectionStore.h / canvasScaleFactor.value)
-    }).then(im => images.value.push(im));
+    // return;
+    const p = new Promise<string>(resolve => {
+        cropImage(imageObject.value?.src, {
+            x: Math.floor(selectionStore.x / canvasScaleFactor.value),
+            y: Math.floor(selectionStore.y / canvasScaleFactor.value),
+            w: Math.floor(selectionStore.w / canvasScaleFactor.value),
+            h: Math.floor(selectionStore.h / canvasScaleFactor.value)
+        }).then(im => resolve(im));
+    });
+    images.value.push(p);
 };
 </script>
 
 <template>
     <div class="main-view bg-gray-50 dark:bg-zinc-800 dark:text-zinc-50" ref="mainView">
         <div class="main-wrapper h-full w-full">
-            <div class="sidebar border-r flex flex-col items-center py-6 space-y-6 bg-white dark:bg-zinc-800 dark:border-zinc-700"
+            <div class="sidebar sidebar-left border-r flex flex-col items-start p-6 space-y-6 bg-white dark:bg-zinc-800 dark:border-zinc-700"
                 :style="{ 'minWidth': sidebarWidth + 'px' }">
                 <div class="sidebar-container flex flex-col items-start space-y-6">
                     <ToolbarItem title="Preview">
@@ -317,10 +329,21 @@ const crop = function () {
                             <InputText label="Height" v-model.number="selectionStore.h"></InputText>
                         </div>
                     </ToolbarItem>
+                    <ToolbarItem title="Ratio">
+                        <div class="coords-wrapper">
+                            <!-- <InputText label="Left" v-model.number="selectionStore.x"></InputText>
+                            <InputText label="Top" v-model.number="selectionStore.y"></InputText>
+                            <InputText label="Width" v-model.number="selectionStore.w"></InputText>
+                            <InputText label="Height" v-model.number="selectionStore.h"></InputText> -->
+                            <InputText v-model.number="selectionStore.h"></InputText>
+                            :
+                            <InputText v-model.number="selectionStore.h"></InputText>
+                        </div>
+                    </ToolbarItem>
 
-                    <Button label="Crop" @click="crop"></Button>
+                    <!-- <Button label="Crop" @click="crop"></Button> -->
 
-                    <ImageEntry v-for="image in images" :dataURL="image.src" />
+                    <!-- <ImageEntry v-for="image in images" :dataURL="image.src" /> -->
                 </div>
             </div>
             <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler" @dragleave="dragendHandler"
@@ -331,17 +354,17 @@ const crop = function () {
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
                             :sourceImageHeight="imageDims.height" :dragging="clickDrag" :fileLoaded="imageFileLoaded"
                             :dataLoaded="imageDataLoaded">
-                     
-                        <div :class="{ 'flashing': cropFlashEffect }"
-                            class="crop-flash-overlay w-full h-full pointer-events-none absolute">
-                        </div>
+
+                            <div :class="{ 'flashing': cropFlashEffect }"
+                                class="crop-flash-overlay w-full h-full pointer-events-none absolute">
+                            </div>
                         </CanvasGroup>
                         <FileChooser v-else :onFileSelect="fileUploadHandler">
                             <template v-slot="{ doClick }">
-                                <div class="canvas-placeholder hover:cursor-pointer hover:text-gray-400"
+                                <div class="canvas-placeholder hover:cursor-pointer hover:text-zinc-300"
                                     @click="doClick">
                                     <div class="crop-placeholder"></div>
-                                    <h2 class="text-gray-500 tracking-tight" :class="{ 'dragging': draggingFile }">Drag
+                                    <h2 class="text-zinc-400 tracking-tight" :class="{ 'dragging': draggingFile }">Drag
                                         an
                                         image
                                     </h2>
@@ -350,7 +373,7 @@ const crop = function () {
                                         <FontAwesomeIcon class="text-gray-500" icon="fa-solid fa-upload" size="6x">
                                         </FontAwesomeIcon>
                                     </span>
-                                    <h2 class="text-gray-500 tracking-tight" v-else @click="doClick"
+                                    <h2 class="text-zinc-400 tracking-tight" v-else @click="doClick"
                                         :class="{ 'dragging': draggingFile }">
                                         or click to select file
                                     </h2>
@@ -359,6 +382,22 @@ const crop = function () {
                         </FileChooser>
                     </div>
                 </Rulers>
+            </div>
+            <div class="sidebar sidebar-right border-l flex flex-col items-center space-y-6 bg-white dark:bg-zinc-800 dark:border-zinc-700"
+                :style="{ 'minWidth': sidebarWidth + 'px' }">
+                <div class="sidebar-container flex flex-col items-start w-full">
+                    <!-- <ToolbarItem title="Preview">
+                        <CropPreview :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
+                            :sourceImageHeight="imageDims.height" :scaleFactor="canvasScaleFactor"></CropPreview>
+                    </ToolbarItem> -->
+                    <SidebarSection class="border-b">
+                        <Button class="w-full" label="Crop" @click="crop"></Button>
+                    </SidebarSection>
+                    <SidebarSection title="Library">
+                        <ImageLibraryList :images="images"></ImageLibraryList>
+                        <!-- <ImageEntry v-for="image in images" :image="image" /> -->
+                    </SidebarSection>
+                </div>
             </div>
         </div>
     </div>
@@ -388,6 +427,10 @@ const crop = function () {
     height: 100%;
     background-color: #fff;
     z-index: 999;
+}
+
+.sidebar .sidebar-section {
+    @apply p-6;
 }
 
 .content-wrapper {
@@ -441,19 +484,18 @@ span.upload-icon.upload-icon-dragging {
 }
 
 div.crop-flash-overlay {
-    background-color: rgba(255,255,255, 0.35);
+    background-color: rgba(255, 255, 255, 0.35);
     opacity: 0;
     z-index: 999;
     // transition: opacity 0.5s ease-out;
 }
 
 div.crop-flash-overlay.flashing {
-    animation: flash 0.5s normal cubic-bezier(0.73, 0.26, 0.33, 0.76)
-    // opacity: 1;
+    animation: flash 0.5s normal cubic-bezier(0.73, 0.26, 0.33, 0.76) // opacity: 1;
 }
 
 div.crop-placeholder {
-    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='19' ry='19' stroke='%23D4D4D4FF' stroke-width='6' stroke-dasharray='6%2c 14' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='19' ry='19' stroke='%23d1d5db' stroke-width='6' stroke-dasharray='6%2c 14' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
     border-radius: 19px;
     width: 800px;
     height: 500px;
