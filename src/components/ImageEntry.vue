@@ -58,7 +58,7 @@ html div.image-entry {
 }
 
 div.image-entry-thumb {
-    background: url('thumbbg.png');
+    background: url('@/assets/thumbbg.png');
 }
 
 img.image-entry-thumb-img {

@@ -31,12 +31,8 @@ const canvasScaleFactor = ref(1.0);
 
 const selectionStore: Quad = useSelectionStore();
 
-const mainView = ref(null);
-
 const canvasGroup: Ref<HTMLDivElement | null> = ref(null);
 const canvasGroupBb = ref(null);
-
-const loadedImages = ref([]);
 
 const imageObject: Ref<HTMLImageElement | null> = ref(null);
 const imageDims = reactive({
@@ -44,12 +40,12 @@ const imageDims = reactive({
     height: 0
 });
 
-const clickDrag = ref(false);
+const mouseDoingDragGesture = ref(false);
 const mouseDown = ref(false);
 
 const cropFlashEffect = ref(false);
 
-const images = ref([]);
+const images: Ref<Promise<string>[]> = ref([]);
 
 /**
  * Subtracts canvas element horizontal offset from mouse position
@@ -102,7 +98,6 @@ const loadImageObject = function (dataUrl: string): void {
         imageDims.width = im.naturalWidth;
         imageDims.height = im.naturalHeight;
         imageObject.value = im;
-        loadedImages.value.push(im);
 
         selectionStore.x = 0;
         selectionStore.y = 0;
@@ -121,8 +116,6 @@ const fileUploadHandler = function (e: Event) {
         imageDataLoaded.value = false;
         canvasMounted.value = false;
         let item = files[0];
-
-        let fr = new FileReader();
 
         loadFile(item).then(url => {
             loadImageObject(url);
@@ -165,6 +158,7 @@ const dragendHandler = function (e: Event) {
     draggingFile.value = false;
 };
 
+
 const auxMouse = reactive({
     initialMousedownX: 0,
     initialMousedownY: 0,
@@ -201,11 +195,11 @@ const mousedownHandler = function (e: MouseEvent) {
         selectionStore.h = 0;
     }
 
-    clickDrag.value = false;
+    mouseDoingDragGesture.value = false;
     mouseDown.value = true;
 };
 
-const snapRange = 1;
+const snapRange = 15;
 const mousemoveHandler = function (e: MouseEvent) {
     let x = selectionStore.x;
     let y = selectionStore.y;
@@ -231,9 +225,9 @@ const mousemoveHandler = function (e: MouseEvent) {
 
     // If mouse moved past threshold, consider motion as click-and-drag
     if (dx * dx + dy * dy > 81 && mouseDown.value)
-        clickDrag.value = true;
+        mouseDoingDragGesture.value = true;
 
-    if (clickDrag.value) {
+    if (mouseDoingDragGesture.value) {
 
         // Moving existing rectangle
         if (mouseInsideSelection.value) {
@@ -253,7 +247,7 @@ const mousemoveHandler = function (e: MouseEvent) {
             selectionStore.x = newX;
             selectionStore.y = newY;
 
-            // Drawing new rectangle
+        // Drawing new rectangle
         } else {
 
             // Adjust if selection drawn backwards
@@ -275,14 +269,14 @@ const mousemoveHandler = function (e: MouseEvent) {
 };
 
 const mouseupHandler = function (e: MouseEvent) {
-    if (!clickDrag.value) {
+    if (!mouseDoingDragGesture.value) {
         selectionStore.x = 0;
         selectionStore.y = 0;
         selectionStore.w = 0;
         selectionStore.h = 0;
     }
 
-    clickDrag.value = false;
+    mouseDoingDragGesture.value = false;
     mouseDown.value = false;
     mouseInsideSelection.value = false;
     drawingSelection.value = false;
@@ -298,8 +292,7 @@ const doCropFlashEffect = function () {
 
 const crop = function () {
     doCropFlashEffect();
-    // return;
-    const p = new Promise<string>(resolve => {
+    const croppedImagePromise = new Promise<string>(resolve => {
         cropImage(imageObject.value?.src, {
             x: Math.floor(selectionStore.x / canvasScaleFactor.value),
             y: Math.floor(selectionStore.y / canvasScaleFactor.value),
@@ -307,12 +300,12 @@ const crop = function () {
             h: Math.floor(selectionStore.h / canvasScaleFactor.value)
         }).then(im => resolve(im));
     });
-    images.value.push(p);
+    images.value.push(croppedImagePromise);
 };
 </script>
 
 <template>
-    <div class="main-view bg-gray-50 dark:bg-zinc-800 dark:text-zinc-50" ref="mainView">
+    <div class="main-view bg-gray-50 dark:bg-zinc-800 dark:text-zinc-50">
         <div class="main-wrapper h-full w-full">
             <div class="sidebar hidden lg:block sidebar-left border-r flex flex-col items-start p-6 space-y-6 bg-white dark:bg-zinc-800 dark:border-zinc-700"
                 :style="{ 'minWidth': sidebarWidth + 'px' }">
@@ -352,7 +345,7 @@ const crop = function () {
                     <div class="canvas-section-wrapper dark:bg-zinc-900 lg:p-6">
                         <CanvasGroup ref="canvasGroup" v-if="imageDataLoaded" @canvasMounted="onCanvasMounted"
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
-                            :sourceImageHeight="imageDims.height" :dragging="clickDrag" :fileLoaded="imageFileLoaded"
+                            :sourceImageHeight="imageDims.height" :dragging="mouseDoingDragGesture" :fileLoaded="imageFileLoaded"
                             :dataLoaded="imageDataLoaded">
 
                             <div :class="{ 'flashing': cropFlashEffect }"
