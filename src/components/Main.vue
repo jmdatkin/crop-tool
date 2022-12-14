@@ -16,6 +16,8 @@ import { cropImage } from '@/api-handler';
 import ImageEntry from './ImageEntry.vue';
 import SidebarSection from './SidebarSection.vue';
 import ImageLibraryList from './ImageLibraryList.vue';
+import Dropdown from './Dropdown.vue';
+import SelectButton from './SelectButton.vue';
 
 const draggingFile = ref(false);
 
@@ -46,6 +48,22 @@ const mouseDown = ref(false);
 const cropFlashEffect = ref(false);
 
 const images: Ref<Promise<string>[]> = ref([]);
+
+/**
+ * Transformation from screen space to image space
+ * @param x Number being transformed
+ */
+const screenToImg = function (x: number): number {
+    return Math.floor(x / canvasScaleFactor.value);
+};
+
+/**
+ * Transformation from image space to screen space
+ * @param x Number being transformed
+ */
+const imgToScreen = function (x: number): number {
+    return Math.floor(x * canvasScaleFactor.value);
+};
 
 /**
  * Subtracts canvas element horizontal offset from mouse position
@@ -247,7 +265,7 @@ const mousemoveHandler = function (e: MouseEvent) {
             selectionStore.x = newX;
             selectionStore.y = newY;
 
-        // Drawing new rectangle
+            // Drawing new rectangle
         } else {
 
             // Adjust if selection drawn backwards
@@ -302,37 +320,58 @@ const crop = function () {
     });
     images.value.push(croppedImagePromise);
 };
+
+const createCoordChangeHandler = function (attr: string): Function {
+    console.log(attr);
+    return (value: number) => selectionStore[attr] = imgToScreen(value);
+};
+
 </script>
 
 <template>
     <div class="main-view bg-gray-50 dark:bg-zinc-800 dark:text-zinc-50">
         <div class="main-wrapper h-full w-full">
-            <div class="sidebar hidden lg:block sidebar-left border-r flex flex-col items-start p-6 space-y-6 bg-white dark:bg-zinc-800 dark:border-zinc-700"
+            <div class="sidebar hidden lg:block sidebar-left border-r flex flex-col items-start space-y-6 bg-white dark:bg-zinc-800 dark:border-zinc-700"
                 :style="{ 'minWidth': sidebarWidth + 'px' }">
-                <div class="sidebar-container flex flex-col items-start space-y-6">
-                    <ToolbarItem title="Preview">
-                        <CropPreview :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
-                            :sourceImageHeight="imageDims.height" :scaleFactor="canvasScaleFactor"></CropPreview>
-                    </ToolbarItem>
-                    <ToolbarItem>
-                        <div class="coords-wrapper">
-                            <InputText label="Left" v-model.number="selectionStore.x"></InputText>
-                            <InputText label="Top" v-model.number="selectionStore.y"></InputText>
-                            <InputText label="Width" v-model.number="selectionStore.w"></InputText>
-                            <InputText label="Height" v-model.number="selectionStore.h"></InputText>
-                        </div>
-                    </ToolbarItem>
-                    <ToolbarItem title="Ratio">
-                        <div class="coords-wrapper">
-                            <!-- <InputText label="Left" v-model.number="selectionStore.x"></InputText>
+                <div class="sidebar-container flex flex-col items-start">
+                    <SidebarSection class="border-b">
+                        <ToolbarItem title="Preview">
+                            <CropPreview :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
+                                :sourceImageHeight="imageDims.height" :scaleFactor="canvasScaleFactor"></CropPreview>
+                        </ToolbarItem>
+                    </SidebarSection>
+                    <SidebarSection>
+                        <ToolbarItem>
+                            <div class="coords-wrapper">
+                                <InputText label="Left" v-model.number="selectionStore.x"
+                                    :transform="(val) => screenToImg(val)"></InputText>
+                                <InputText label="Top" v-model.number="selectionStore.y"
+                                    :transform="(val) => screenToImg(val)"></InputText>
+                                <InputText label="Width" v-model.number="selectionStore.w"
+                                    :transform="(val) => screenToImg(val)"></InputText>
+                                <InputText label="Height" v-model.number="selectionStore.h"
+                                    :transform="(val) => screenToImg(val)"></InputText>
+                                <!-- <InputText label="Left" :transform="(val) => screenToImg(val)"></InputText>
+                            <InputText label="Top" ></InputText>
+                            <InputText label="Width"  ></InputText>
+                            <InputText label="Height"  ></InputText> -->
+                            </div>
+                        </ToolbarItem>
+                        <ToolbarItem title="Selection Mode">
+                            <SelectButton></SelectButton>
+                        </ToolbarItem>
+                        <ToolbarItem title="Ratio">
+                            <div class="coords-wrapper">
+                                <!-- <InputText label="Left" v-model.number="selectionStore.x"></InputText>
                             <InputText label="Top" v-model.number="selectionStore.y"></InputText>
                             <InputText label="Width" v-model.number="selectionStore.w"></InputText>
                             <InputText label="Height" v-model.number="selectionStore.h"></InputText> -->
-                            <InputText v-model.number="selectionStore.h"></InputText>
-                            :
-                            <InputText v-model.number="selectionStore.h"></InputText>
-                        </div>
-                    </ToolbarItem>
+                                <InputText v-model.number="selectionStore.h"></InputText>
+                                :
+                                <InputText v-model.number="selectionStore.h"></InputText>
+                            </div>
+                        </ToolbarItem>
+                    </SidebarSection>
 
                     <!-- <Button label="Crop" @click="crop"></Button> -->
 
@@ -345,8 +384,8 @@ const crop = function () {
                     <div class="canvas-section-wrapper dark:bg-zinc-900 lg:p-6">
                         <CanvasGroup ref="canvasGroup" v-if="imageDataLoaded" @canvasMounted="onCanvasMounted"
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
-                            :sourceImageHeight="imageDims.height" :dragging="mouseDoingDragGesture" :fileLoaded="imageFileLoaded"
-                            :dataLoaded="imageDataLoaded">
+                            :sourceImageHeight="imageDims.height" :dragging="mouseDoingDragGesture"
+                            :fileLoaded="imageFileLoaded" :dataLoaded="imageDataLoaded">
 
                             <div :class="{ 'flashing': cropFlashEffect }"
                                 class="crop-flash-overlay w-full h-full pointer-events-none absolute">

@@ -1,18 +1,44 @@
 <script setup lang="ts">
-defineProps(['label', 'modelValue']);
+import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
+
+defineProps(['label', 'items']);
 </script>
 
 <template>
-    <div class="inputtext">
+    <div class="c-dropdown">
         <label v-if="label">
             <span>{{ label }}</span>
-            <input
-                class="border rounded border-gray-500 text-black dark:bg-zinc-800 dark:text-zinc-50 dark:border-zinc-700 focus:outline-none"
-                :value="modelValue" @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)" />
+            <Menu>
+                <MenuButton>More</MenuButton>
+                <MenuItems>
+                    <MenuItem v-slot="{ active }">
+                    <a>
+                        Hey ;)
+                    </a>
+                    </MenuItem>
+                    <MenuItem v-slot="{ active }">
+                    <a>
+                        Hey yourself ;;)
+                    </a>
+                    </MenuItem>
+                </MenuItems>
+            </Menu>
         </label>
-        <input v-else
-            class="border rounded border-gray-500 text-black dark:bg-zinc-800 dark:text-zinc-50 dark:border-zinc-700  focus:outline-none"
-            :value="modelValue" @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)" />
+        <Menu v-else>
+            <MenuButton>More</MenuButton>
+            <MenuItems>
+                <MenuItem v-slot="{ active }">
+                <a>
+                    Hey ;)
+                </a>
+                </MenuItem>
+                <MenuItem v-slot="{ active }">
+                <a>
+                    Hey yourself ;;)
+                </a>
+                </MenuItem>
+            </MenuItems>
+        </Menu>
     </div>
 </template>
 

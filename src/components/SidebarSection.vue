@@ -7,7 +7,7 @@ defineProps(['title']);
         <span v-if="title" class="sidebar-section-label font-bold text-zinc-700 dark:text-zinc-100 uppercase text-md mb-4">
             {{ title }}
         </span>
-        <div class="sidebar-section-content w-full">
+        <div class="sidebar-section-content w-full space-y-6">
             <slot></slot>
         </div>
     </div>

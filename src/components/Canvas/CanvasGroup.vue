@@ -21,8 +21,6 @@
 </template>
 
 <script setup lang="ts">
-
-import { computed } from '@vue/reactivity';
 import { onMounted, onUpdated, reactive, ref } from 'vue';
 import ImageCanvas from './ImageCanvas.vue';
 import OverlayCanvas from './OverlayCanvas.vue';

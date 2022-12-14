@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { useDraw } from '@/hooks';
+import useDraw from '@/hooks/useDraw';
 import { useSelectionStore } from '@/stores/selection';
 import { onMounted, onUpdated, ref, watch } from 'vue';
-import type MousePositionData from '../types/MousePositionData';
 
 const props = defineProps<{
     sourceImage: HTMLImageElement | null,

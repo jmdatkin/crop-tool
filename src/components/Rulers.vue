@@ -4,7 +4,7 @@ import colors from 'tailwindcss/colors';
 import { rulerSize, sidebarWidth, appBarHeight } from '@/variables';
 import { createTextVNode, inject, onMounted, onUpdated, reactive, ref, watch } from 'vue';
 import { useSelectionStore } from '@/stores/selection';
-import { useDraw } from '@/hooks';
+import useDraw from '@/hooks/useDraw';
 
 const props = defineProps<{
     canvasGroupBb: DOMRect,

@@ -6,7 +6,7 @@
 
 import { useSelectionStore } from '@/stores/selection';
 import { onMounted, onUpdated, ref, watch, watchEffect, type Ref } from 'vue';
-import { useDraw } from '@/hooks';
+import useDraw from '@/hooks/useDraw';
 
 const props = defineProps<{
     width: Number,
