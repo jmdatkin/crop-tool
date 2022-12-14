@@ -52,6 +52,9 @@ const selectModeOptions = ref([
     },
 ]);
 
+const resizing: Ref<string | null> = ref(null);
+const setResizing = (val: string) => resizing.value = val;
+
 const fixedRatioWidth = ref(1);
 const fixedRatioHeight = ref(1);
 
@@ -481,7 +484,9 @@ const createCoordChangeHandler = function (attr: string): Function {
                         <CanvasGroup ref="canvasGroup" v-if="imageDataLoaded" @canvasMounted="onCanvasMounted"
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
                             :sourceImageHeight="imageDims.height" :dragging="mouseDoingDragGesture"
-                            :fileLoaded="imageFileLoaded" :dataLoaded="imageDataLoaded" :showGridlines="showGridlines">
+                            :fileLoaded="imageFileLoaded" :dataLoaded="imageDataLoaded" :showGridlines="showGridlines"
+                            :setResizing="setResizing"
+                            >
 
                             <div :class="{ 'flashing': cropFlashEffect }"
                                 class="crop-flash-overlay w-full h-full pointer-events-none absolute">

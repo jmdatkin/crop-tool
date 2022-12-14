@@ -18,6 +18,8 @@ const canv = ref(null);
 const ctx: Ref<CanvasRenderingContext2D | null> = ref(null);
 const iid = ref(null);
 
+const emit = defineEmits(['grab-selection-corner']);
+
 const selectionStore = useSelectionStore();
 
 const draw = function () {
@@ -113,6 +115,39 @@ const drawCorner = function (ctx: CanvasRenderingContext2D, x: number, y: number
     }
 
     ctx.stroke();
+};
+
+const cornerResizeRadius = 10;
+const checkCorner = function(x: number, y: number, x0: number, y0: number) {
+    return (x > x0 - cornerResizeRadius &&
+        x <= x0 + cornerResizeRadius &&
+        y > y0 - cornerResizeRadius &&
+        y <= y0 + cornerResizeRadius)
+}
+const onClickHandler = function(e:MouseEvent) {
+    const bb = canv.value.getBoundingClientRect();
+
+    let x = selectionStore.x;
+    let y = selectionStore.y;
+    let w = selectionStore.w;
+    let h = selectionStore.h;
+
+    let mouseX = e.pageX - bb.left;
+    let mouseY = e.pageY - bb.top;
+
+    let corners = {
+        'tl': {x: x,        y: y},
+        'tr': {x: x + w,    y: y},
+        'br': {x: x + w,    y: y + h},
+        'bl': {x: x,        y: y + h}
+    };
+
+    for (const [key,corner] of (<any>Object).entries(corners)) {
+        if (checkCorner(mouseX,mouseY, corner.x, corner.y)) {
+            emit('grab-selection-corner', key);
+            return;
+        }
+    }
 };
 
 onUpdated(() => {
