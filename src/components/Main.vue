@@ -18,6 +18,7 @@ import SidebarSection from './SidebarSection.vue';
 import ImageLibraryList from './ImageLibraryList.vue';
 import Dropdown from './Dropdown.vue';
 import SelectButton from './SelectButton.vue';
+import { SelectMode } from '@/types/SelectModeOptions';
 
 const draggingFile = ref(false);
 
@@ -32,6 +33,24 @@ const canvasMounted = ref(false);
 const canvasScaleFactor = ref(1.0);
 
 const selectionStore: Quad = useSelectionStore();
+
+const selectMode: Ref<SelectMode> = ref(SelectMode.FREE);
+const selectModeOptions = ref([
+    {
+        name: "Free Select",
+        icon: "fa-solid fa-lock-open",
+        code: SelectMode.FREE
+    },
+    {
+        name: "Fixed Ratio",
+        icon: "fa-solid fa-lock",
+        code: SelectMode.FIXED_RATIO
+    },
+    {
+        name: "Fixed Size",
+        code: SelectMode.FIXED_SIZE
+    },
+]);
 
 const canvasGroup: Ref<HTMLDivElement | null> = ref(null);
 const canvasGroupBb = ref(null);
@@ -351,31 +370,19 @@ const createCoordChangeHandler = function (attr: string): Function {
                                     :transform="(val) => screenToImg(val)"></InputText>
                                 <InputText label="Height" v-model.number="selectionStore.h"
                                     :transform="(val) => screenToImg(val)"></InputText>
-                                <!-- <InputText label="Left" :transform="(val) => screenToImg(val)"></InputText>
-                            <InputText label="Top" ></InputText>
-                            <InputText label="Width"  ></InputText>
-                            <InputText label="Height"  ></InputText> -->
                             </div>
                         </ToolbarItem>
                         <ToolbarItem title="Selection Mode">
-                            <SelectButton></SelectButton>
+                            <SelectButton v-model="selectMode" :items="selectModeOptions"></SelectButton>
                         </ToolbarItem>
                         <ToolbarItem title="Ratio">
                             <div class="coords-wrapper">
-                                <!-- <InputText label="Left" v-model.number="selectionStore.x"></InputText>
-                            <InputText label="Top" v-model.number="selectionStore.y"></InputText>
-                            <InputText label="Width" v-model.number="selectionStore.w"></InputText>
-                            <InputText label="Height" v-model.number="selectionStore.h"></InputText> -->
                                 <InputText v-model.number="selectionStore.h"></InputText>
                                 :
                                 <InputText v-model.number="selectionStore.h"></InputText>
                             </div>
                         </ToolbarItem>
                     </SidebarSection>
-
-                    <!-- <Button label="Crop" @click="crop"></Button> -->
-
-                    <!-- <ImageEntry v-for="image in images" :dataURL="image.src" /> -->
                 </div>
             </div>
             <div class="content-wrapper" @drop.prevent="dropHandler" @dragover="dragHandler" @dragleave="dragendHandler"
