@@ -16,7 +16,7 @@ defineProps(['items']);
 
     <RadioGroupOption class="c-selectbutton-option" v-for="item in items" v-slot="{ checked }" :value="item.code">
         <div :class="checked ? 'bg-blue-500 text-zinc-50 border-blue-700' : ''" class="c-selectbutton-option-inner">
-            {{ item.name }}
+            <span>{{ item.name }}</span>
             <FontAwesomeIcon :icon="item.icon ?? ''" />
         </div>
     </RadioGroupOption>
@@ -54,7 +54,7 @@ div.c-selectbutton div.c-selectbutton-option > div {
     @apply border-zinc-500;
     @apply dark:border-zinc-700;
     @apply cursor-pointer;
-    @apply focus:ring;
+    @apply active:ring;
 }
 
 div.c-selectbutton-option > div.c-selectbutton-option-inner {

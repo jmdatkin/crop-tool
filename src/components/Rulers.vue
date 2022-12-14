@@ -193,7 +193,8 @@ const drawRulerV = function () {
     ctx.textBaseline = "bottom";
     ctx.font = "Inter 9px";
 
-    const start = -50;
+    const start = -25;
+    // const start = -25;
     const end = rulerSize - props.canvasGroupBb.height - props.canvasGroupBb.top + 50;// - sidebarWidth - rulerSize;
 
     ctx.fillStyle = darkMode.value ? darkTextColor : textColor;

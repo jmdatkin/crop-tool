@@ -37,7 +37,7 @@ const selectionStore: Quad = useSelectionStore();
 const selectMode: Ref<SelectMode> = ref(SelectMode.FREE);
 const selectModeOptions = ref([
     {
-        name: "Free Select",
+        name: "Unconstrained",
         icon: "fa-solid fa-lock-open",
         code: SelectMode.FREE
     },
@@ -54,6 +54,9 @@ const selectModeOptions = ref([
 
 const fixedRatioWidth = ref(1);
 const fixedRatioHeight = ref(1);
+
+const fixedSizeWidth = ref(300);
+const fixedSizeHeight = ref(200);
 
 const showGridlines = ref(true);
 
@@ -289,7 +292,7 @@ const mousemoveHandler = function (e: MouseEvent) {
             selectionStore.x = newX;
             selectionStore.y = newY;
 
-            
+
         } else {    // Drawing new rectangle
             if (selectMode.value === SelectMode.FREE) {
 
@@ -335,6 +338,25 @@ const mousemoveHandler = function (e: MouseEvent) {
                 selectionStore.y = y;
                 selectionStore.w = dx;
                 selectionStore.h = dy;
+            } else if (selectMode.value === SelectMode.FIXED_SIZE) {
+                let newX = auxMouse.mousemoveX;
+                let newY = auxMouse.mousemoveY;
+
+                //Snap to edge
+                if (newX < snapRange)
+                    newX = 0;
+                if (newY < snapRange)
+                    newY = 0;
+                if (canvasGroupBb.value.width - (newX + w) < snapRange)
+                    newX = canvasGroupBb.value.width - w;
+                if (canvasGroupBb.value.height - (newY + h) < snapRange)
+                    newY = canvasGroupBb.value.height - h;
+
+                selectionStore.x = newX;
+                selectionStore.y = newY;
+                selectionStore.w = imgToScreen(fixedSizeWidth.value);
+                selectionStore.h = imgToScreen(fixedSizeHeight.value);
+
             }
 
         }
@@ -367,10 +389,14 @@ const crop = function () {
     doCropFlashEffect();
     const croppedImagePromise = new Promise<string>(resolve => {
         cropImage(imageObject.value?.src, {
-            x: Math.floor(selectionStore.x / canvasScaleFactor.value),
-            y: Math.floor(selectionStore.y / canvasScaleFactor.value),
-            w: Math.floor(selectionStore.w / canvasScaleFactor.value),
-            h: Math.floor(selectionStore.h / canvasScaleFactor.value)
+            // x: Math.floor(selectionStore.x / canvasScaleFactor.value),
+            // y: Math.floor(selectionStore.y / canvasScaleFactor.value),
+            // w: Math.floor(selectionStore.w / canvasScaleFactor.value),
+            // h: Math.floor(selectionStore.h / canvasScaleFactor.value)
+            x: screenToImg(selectionStore.x),
+            y: screenToImg(selectionStore.y),
+            w: screenToImg(selectionStore.w),
+            h: screenToImg(selectionStore.h)
         }).then(im => resolve(im));
     });
     images.value.push(croppedImagePromise);
@@ -392,13 +418,12 @@ const createCoordChangeHandler = function (attr: string): Function {
                     <SidebarSection class="border-b">
                         <ToolbarItem title="Preview">
                             <CropPreview :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
-                                :sourceImageHeight="imageDims.height" :scaleFactor="canvasScaleFactor"
-                                ></CropPreview>
+                                :sourceImageHeight="imageDims.height" :scaleFactor="canvasScaleFactor"></CropPreview>
                         </ToolbarItem>
                     </SidebarSection>
                     <SidebarSection>
                         <ToolbarItem>
-                            <div class="coords-wrapper">
+                            <div class="w-full grid grid-cols-2 gap-2">
                                 <InputText label="Left" v-model.number="selectionStore.x"
                                     :transform="(val) => screenToImg(val)"></InputText>
                                 <InputText label="Top" v-model.number="selectionStore.y"
@@ -410,14 +435,21 @@ const createCoordChangeHandler = function (attr: string): Function {
                             </div>
                         </ToolbarItem>
                         <ToolbarItem title="Selection Mode">
-                            {{ selectMode }}
                             <SelectButton v-model="selectMode" :items="selectModeOptions"></SelectButton>
                         </ToolbarItem>
-                        <ToolbarItem title="Ratio">
-                            <div class="coords-wrapper">
-                                <InputText v-model.number="fixedRatioWidth"></InputText>
-                                :
-                                <InputText v-model.number="fixedRatioHeight"></InputText>
+                        <ToolbarItem v-if="selectMode === SelectMode.FIXED_RATIO" title="Ratio">
+                            <div class="flex w-full items-center space-between space-x-2">
+                                <InputText class="flex-grow" v-model.number="fixedRatioWidth"></InputText>
+                                <span>
+                                    :
+                                </span>
+                                <InputText class="flex-grow" v-model.number="fixedRatioHeight"></InputText>
+                            </div>
+                        </ToolbarItem>
+                        <ToolbarItem v-if="selectMode === SelectMode.FIXED_SIZE" title="Size">
+                            <div class="flex w-full items-center space-x-2">
+                                <InputText v-model.number="fixedSizeWidth"></InputText>
+                                <InputText v-model.number="fixedSizeHeight"></InputText>
                             </div>
                         </ToolbarItem>
                     </SidebarSection>
@@ -430,9 +462,7 @@ const createCoordChangeHandler = function (attr: string): Function {
                         <CanvasGroup ref="canvasGroup" v-if="imageDataLoaded" @canvasMounted="onCanvasMounted"
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
                             :sourceImageHeight="imageDims.height" :dragging="mouseDoingDragGesture"
-                            :fileLoaded="imageFileLoaded" :dataLoaded="imageDataLoaded"
-                            :showGridlines="showGridlines"
-                            >
+                            :fileLoaded="imageFileLoaded" :dataLoaded="imageDataLoaded" :showGridlines="showGridlines">
 
                             <div :class="{ 'flashing': cropFlashEffect }"
                                 class="crop-flash-overlay w-full h-full pointer-events-none absolute">

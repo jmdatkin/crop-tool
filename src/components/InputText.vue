@@ -43,6 +43,6 @@ label {
 input {
     padding: 7px 9px;
     min-width: 0;
-    max-width: 100%;
+    width: 100%;
 }
 </style>
