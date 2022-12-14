@@ -15,6 +15,7 @@
                 :width="canvasDims.width"
                 :height="canvasDims.height"
                 :dragging="props.dragging"
+                :showGridlines="showGridlines"
             ></OverlayCanvas>
         </div>
     </div>
@@ -30,7 +31,8 @@ const props = defineProps<{
     sourceImageWidth: Number,
     sourceImageHeight: Number,
     dragging: boolean,
-    dataLoaded: boolean
+    dataLoaded: boolean,
+    showGridlines: boolean
 }>();
 
 const emit = defineEmits(['canvasMounted', 'resize']);

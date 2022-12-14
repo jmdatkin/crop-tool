@@ -52,6 +52,11 @@ const selectModeOptions = ref([
     },
 ]);
 
+const fixedRatioWidth = ref(1);
+const fixedRatioHeight = ref(1);
+
+const showGridlines = ref(true);
+
 const canvasGroup: Ref<HTMLDivElement | null> = ref(null);
 const canvasGroupBb = ref(null);
 
@@ -284,23 +289,54 @@ const mousemoveHandler = function (e: MouseEvent) {
             selectionStore.x = newX;
             selectionStore.y = newY;
 
-            // Drawing new rectangle
-        } else {
+            
+        } else {    // Drawing new rectangle
+            if (selectMode.value === SelectMode.FREE) {
 
-            // Adjust if selection drawn backwards
-            if (dx < 0) {
-                dx = -dx;
-                x = auxMouse.initialMousedownX - dx
+                // Adjust if selection drawn backwards
+                if (dx < 0) {
+                    dx = -dx;
+                    x = auxMouse.initialMousedownX - dx
+                }
+                if (dy < 0) {
+                    dy = -dy;
+                    y = auxMouse.initialMousedownY - dy
+                };
+
+                selectionStore.x = x;
+                selectionStore.y = y;
+                selectionStore.w = dx;
+                selectionStore.h = dy;
+            } else if (selectMode.value === SelectMode.FIXED_RATIO) {
+                // Aspect ratio of selection ratio
+                let wRatio = fixedRatioWidth.value / fixedRatioHeight.value;
+
+                let flipX = dx < 0,
+                    flipY = dy < 0;
+
+                if (flipX) dx = -dx;
+                if (flipY) dy = -dy;
+
+                // Constrain smaller selection dimension to aspect ratio multiple of greater dimension
+                if (dy * wRatio <= dx)
+                    dx = Math.floor(dy * wRatio);
+                else if (dx / wRatio <= dy)
+                    dy = Math.floor(dx / wRatio);
+
+                // Adjust if selection drawn backwards
+                if (flipX) {
+                    x = auxMouse.initialMousedownX - dx
+                }
+                if (flipY) {
+                    y = auxMouse.initialMousedownY - dy;
+                }
+
+                selectionStore.x = x;
+                selectionStore.y = y;
+                selectionStore.w = dx;
+                selectionStore.h = dy;
             }
-            if (dy < 0) {
-                dy = -dy;
-                y = auxMouse.initialMousedownY - dy
-            };
 
-            selectionStore.x = x;
-            selectionStore.y = y;
-            selectionStore.w = dx;
-            selectionStore.h = dy;
         }
     }
 };
@@ -356,7 +392,8 @@ const createCoordChangeHandler = function (attr: string): Function {
                     <SidebarSection class="border-b">
                         <ToolbarItem title="Preview">
                             <CropPreview :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
-                                :sourceImageHeight="imageDims.height" :scaleFactor="canvasScaleFactor"></CropPreview>
+                                :sourceImageHeight="imageDims.height" :scaleFactor="canvasScaleFactor"
+                                ></CropPreview>
                         </ToolbarItem>
                     </SidebarSection>
                     <SidebarSection>
@@ -373,13 +410,14 @@ const createCoordChangeHandler = function (attr: string): Function {
                             </div>
                         </ToolbarItem>
                         <ToolbarItem title="Selection Mode">
+                            {{ selectMode }}
                             <SelectButton v-model="selectMode" :items="selectModeOptions"></SelectButton>
                         </ToolbarItem>
                         <ToolbarItem title="Ratio">
                             <div class="coords-wrapper">
-                                <InputText v-model.number="selectionStore.h"></InputText>
+                                <InputText v-model.number="fixedRatioWidth"></InputText>
                                 :
-                                <InputText v-model.number="selectionStore.h"></InputText>
+                                <InputText v-model.number="fixedRatioHeight"></InputText>
                             </div>
                         </ToolbarItem>
                     </SidebarSection>
@@ -392,7 +430,9 @@ const createCoordChangeHandler = function (attr: string): Function {
                         <CanvasGroup ref="canvasGroup" v-if="imageDataLoaded" @canvasMounted="onCanvasMounted"
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
                             :sourceImageHeight="imageDims.height" :dragging="mouseDoingDragGesture"
-                            :fileLoaded="imageFileLoaded" :dataLoaded="imageDataLoaded">
+                            :fileLoaded="imageFileLoaded" :dataLoaded="imageDataLoaded"
+                            :showGridlines="showGridlines"
+                            >
 
                             <div :class="{ 'flashing': cropFlashEffect }"
                                 class="crop-flash-overlay w-full h-full pointer-events-none absolute">

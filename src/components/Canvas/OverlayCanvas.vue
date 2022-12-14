@@ -11,6 +11,7 @@ import useDraw from '@/hooks/useDraw';
 const props = defineProps<{
     width: Number,
     height: Number,
+    showGridlines: boolean
 }>();
 
 const canv = ref(null);
@@ -37,8 +38,46 @@ const draw = function () {
     ctx.value.globalCompositeOperation = 'source-over';
 
     ctx.value.setLineDash([7, 5]);
-    ctx.value.lineWidth = 0.5;
+    // ctx.value.lineWidth = 0.5;
+    // ctx.value.strokeRect(x, y, w, h);
+    // White stroke with black outline
+    ctx.value.lineWidth = 3;
+    ctx.value.strokeStyle = 'rgba(0,0,0,0.5)';
     ctx.value.strokeRect(x, y, w, h);
+    ctx.value.lineWidth = 1;
+    ctx.value.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.value.strokeRect(x, y, w, h);
+    ctx.value.strokeRect(x, y, w, h);
+
+    // Rule of thirds
+    let oneThirdW = Math.floor(w*0.33);
+    let twoThirdsW = Math.floor(w*0.66);
+
+    let oneThirdH = Math.floor(h*0.33);
+    let twoThirdsH = Math.floor(h*0.66);
+
+    ctx.value?.setLineDash([]);
+    ctx.value.lineWidth = 0.5;
+    ctx.value?.beginPath();
+    ctx.value?.moveTo(x + oneThirdW, y);
+    ctx.value?.lineTo(x + oneThirdW, y + h);
+    ctx.value?.moveTo(x + twoThirdsW, y);
+    ctx.value?.lineTo(x + twoThirdsW, y + h);
+
+    ctx.value?.moveTo(x, y + oneThirdH);
+    ctx.value?.lineTo(x + w, y + oneThirdH);
+    ctx.value?.moveTo(x, y + twoThirdsH);
+    ctx.value?.lineTo(x + w, y + twoThirdsH);
+
+    // White stroke with black outline
+    ctx.value.lineWidth = 3;
+    ctx.value.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.value?.stroke();
+    ctx.value.lineWidth = 0.5;
+    ctx.value.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.value?.stroke();
+    ctx.value?.stroke();
+
 };
 
 const {start, stop} = useDraw(draw);
@@ -81,13 +120,14 @@ const drawCorner = function (ctx: CanvasRenderingContext2D, x: number, y: number
 onUpdated(() => {
     canv.value.width = props.width;
     canv.value.height = props.height;
+    ctx.value.translate(0.5, 0.5);
 });
 
 onMounted(() => {
     canv.value.width = props.width;
     canv.value.height = props.height;
     ctx.value = canv.value.getContext('2d');
-    ctx.value.translate(0.5, 0, 5);
+    ctx.value.translate(0.5, 0.5);
     start();
 });
 </script>
