@@ -37,18 +37,6 @@ const draw = function () {
 
     ctx.value.globalCompositeOperation = 'source-over';
 
-    ctx.value.setLineDash([7, 5]);
-    // ctx.value.lineWidth = 0.5;
-    // ctx.value.strokeRect(x, y, w, h);
-    // White stroke with black outline
-    ctx.value.lineWidth = 2;
-    ctx.value.strokeStyle = 'rgba(0,0,0,0.5)';
-    ctx.value.strokeRect(x, y, w, h);
-    ctx.value.lineWidth = 1;
-    ctx.value.strokeStyle = 'rgba(255,255,255,0.5)';
-    ctx.value.strokeRect(x, y, w, h);
-    ctx.value.strokeRect(x, y, w, h);
-
     // Rule of thirds
     let oneThirdW = Math.floor(w*0.33);
     let twoThirdsW = Math.floor(w*0.66);
@@ -71,13 +59,23 @@ const draw = function () {
 
     // White stroke with black outline
     ctx.value.lineWidth = 3;
-    ctx.value.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.value.strokeStyle = 'rgba(0,0,0,0.4)';
     ctx.value?.stroke();
     ctx.value.lineWidth = 0.5;
-    ctx.value.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.value.strokeStyle = 'rgba(255,255,255,0.8)';
     ctx.value?.stroke();
     ctx.value?.stroke();
 
+    // Marquee border
+    ctx.value.setLineDash([7, 5]);
+    // White stroke with black outline
+    ctx.value.lineWidth = 2;
+    ctx.value.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.value.strokeRect(x, y, w, h);
+    ctx.value.lineWidth = 1;
+    ctx.value.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.value.strokeRect(x, y, w, h);
+    ctx.value.strokeRect(x, y, w, h);
 };
 
 const {start, stop} = useDraw(draw);

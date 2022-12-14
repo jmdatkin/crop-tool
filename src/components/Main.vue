@@ -238,6 +238,26 @@ const mousedownHandler = function (e: MouseEvent) {
         selectionStore.y = auxMouse.initialMousedownY;
         selectionStore.w = 0;
         selectionStore.h = 0;
+
+        if (selectMode.value === SelectMode.FIXED_SIZE) {
+            let newX = auxMouse.mousemoveX;
+            let newY = auxMouse.mousemoveY;
+
+            //Snap to edge
+            if (newX < snapRange)
+                newX = 0;
+            if (newY < snapRange)
+                newY = 0;
+            if (canvasGroupBb.value.width - (newX + w) < snapRange)
+                newX = canvasGroupBb.value.width - w;
+            if (canvasGroupBb.value.height - (newY + h) < snapRange)
+                newY = canvasGroupBb.value.height - h;
+
+            selectionStore.x = newX;
+            selectionStore.y = newY;
+            selectionStore.w = imgToScreen(fixedSizeWidth.value);
+            selectionStore.h = imgToScreen(fixedSizeHeight.value);
+        }
     }
 
     mouseDoingDragGesture.value = false;
@@ -356,7 +376,6 @@ const mousemoveHandler = function (e: MouseEvent) {
                 selectionStore.y = newY;
                 selectionStore.w = imgToScreen(fixedSizeWidth.value);
                 selectionStore.h = imgToScreen(fixedSizeHeight.value);
-
             }
 
         }
@@ -364,7 +383,7 @@ const mousemoveHandler = function (e: MouseEvent) {
 };
 
 const mouseupHandler = function (e: MouseEvent) {
-    if (!mouseDoingDragGesture.value) {
+    if (!mouseDoingDragGesture.value && selectMode.value !== SelectMode.FIXED_SIZE) {
         selectionStore.x = 0;
         selectionStore.y = 0;
         selectionStore.w = 0;
