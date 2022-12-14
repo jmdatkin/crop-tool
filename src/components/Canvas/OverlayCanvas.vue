@@ -41,7 +41,7 @@ const draw = function () {
     // ctx.value.lineWidth = 0.5;
     // ctx.value.strokeRect(x, y, w, h);
     // White stroke with black outline
-    ctx.value.lineWidth = 3;
+    ctx.value.lineWidth = 2;
     ctx.value.strokeStyle = 'rgba(0,0,0,0.5)';
     ctx.value.strokeRect(x, y, w, h);
     ctx.value.lineWidth = 1;
