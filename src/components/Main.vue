@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { loadFile } from '../file-handler';
-import { reactive, ref, type Ref } from "vue";
+import { provide, reactive, ref, type Ref } from "vue";
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import CanvasGroup from "./Canvas/CanvasGroup.vue";
 import ToolbarItem from "./ToolbarItem.vue";
@@ -19,6 +19,7 @@ import ImageLibraryList from './ImageLibraryList.vue';
 import Dropdown from './Dropdown.vue';
 import SelectButton from './SelectButton.vue';
 import { SelectMode } from '@/types/SelectModeOptions';
+import SelectionTooltip from './SelectionTooltip.vue';
 
 const draggingFile = ref(false);
 
@@ -31,6 +32,7 @@ const imageFileLoaded = ref(false);
 
 const canvasMounted = ref(false);
 const canvasScaleFactor = ref(1.0);
+provide('scale-factor', canvasScaleFactor);
 
 const selectionStore: Quad = useSelectionStore();
 
@@ -38,12 +40,12 @@ const selectMode: Ref<SelectMode> = ref(SelectMode.FREE);
 const selectModeOptions = ref([
     {
         name: "Unconstrained",
-        icon: "fa-solid fa-lock-open",
+        // icon: "fa-solid fa-lock-open",
         code: SelectMode.FREE
     },
     {
         name: "Fixed Ratio",
-        icon: "fa-solid fa-lock",
+        // icon: "fa-solid fa-lock",
         code: SelectMode.FIXED_RATIO
     },
     {
@@ -268,11 +270,33 @@ const mousedownHandler = function (e: MouseEvent) {
 };
 
 const snapRange = 15;
+const cornerResizeRadius = 10;
 const mousemoveHandler = function (e: MouseEvent) {
     let x = selectionStore.x;
     let y = selectionStore.y;
     let w = selectionStore.w;
     let h = selectionStore.h;
+
+    auxMouse.mousemoveX = transformMouseX(e.pageX);
+    auxMouse.mousemoveY = transformMouseY(e.pageY);
+
+    let corners = {
+        'tl': { x: x, y: y },
+        'tr': { x: x + w, y: y },
+        'br': { x: x + w, y: y + h },
+        'bl': { x: x, y: y + h }
+    };
+    let hoveringCorner = '';
+    for (const [key, corner] of (<any>Object).entries(corners)) {
+        let isMouseOverCorner = posInQuad(auxMouse.mousemoveX, auxMouse.mousemoveY,
+            corner.x - cornerResizeRadius,
+            corner.y - cornerResizeRadius,
+            cornerResizeRadius * 2, cornerResizeRadius * 2);
+        if (isMouseOverCorner) {
+            hoveringCorner = key;
+            break;
+        }
+    }
 
     if (canvasGroup.value !== null) {
         if (drawingSelection.value)
@@ -285,8 +309,6 @@ const mousemoveHandler = function (e: MouseEvent) {
             canvasGroup.value.wrapper.style.cursor = 'crosshair';
     }
 
-    auxMouse.mousemoveX = transformMouseX(e.pageX);
-    auxMouse.mousemoveY = transformMouseY(e.pageY);
 
     let dx = auxMouse.mousemoveX - auxMouse.initialMousedownX;
     let dy = auxMouse.mousemoveY - auxMouse.initialMousedownY;
@@ -295,75 +317,13 @@ const mousemoveHandler = function (e: MouseEvent) {
     if (dx * dx + dy * dy > 81 && mouseDown.value)
         mouseDoingDragGesture.value = true;
 
-    if (mouseDoingDragGesture.value) {
+    if (mouseDown.value) {
+        if (mouseDoingDragGesture.value) {
 
-        // Moving existing rectangle
-        if (mouseInsideSelection.value) {
-            let newX = auxMouse.initialSelectionX + dx;
-            let newY = auxMouse.initialSelectionY + dy;
-
-            //Snap to edge
-            if (newX < snapRange)
-                newX = 0;
-            if (newY < snapRange)
-                newY = 0;
-            if (canvasGroupBb.value.width - (newX + w) < snapRange)
-                newX = canvasGroupBb.value.width - w;
-            if (canvasGroupBb.value.height - (newY + h) < snapRange)
-                newY = canvasGroupBb.value.height - h;
-
-            selectionStore.x = newX;
-            selectionStore.y = newY;
-
-
-        } else {    // Drawing new rectangle
-            if (selectMode.value === SelectMode.FREE) {
-
-                // Adjust if selection drawn backwards
-                if (dx < 0) {
-                    dx = -dx;
-                    x = auxMouse.initialMousedownX - dx
-                }
-                if (dy < 0) {
-                    dy = -dy;
-                    y = auxMouse.initialMousedownY - dy
-                };
-
-                selectionStore.x = x;
-                selectionStore.y = y;
-                selectionStore.w = dx;
-                selectionStore.h = dy;
-            } else if (selectMode.value === SelectMode.FIXED_RATIO) {
-                // Aspect ratio of selection ratio
-                let wRatio = fixedRatioWidth.value / fixedRatioHeight.value;
-
-                let flipX = dx < 0,
-                    flipY = dy < 0;
-
-                if (flipX) dx = -dx;
-                if (flipY) dy = -dy;
-
-                // Constrain smaller selection dimension to aspect ratio multiple of greater dimension
-                if (dy * wRatio <= dx)
-                    dx = Math.floor(dy * wRatio);
-                else if (dx / wRatio <= dy)
-                    dy = Math.floor(dx / wRatio);
-
-                // Adjust if selection drawn backwards
-                if (flipX) {
-                    x = auxMouse.initialMousedownX - dx
-                }
-                if (flipY) {
-                    y = auxMouse.initialMousedownY - dy;
-                }
-
-                selectionStore.x = x;
-                selectionStore.y = y;
-                selectionStore.w = dx;
-                selectionStore.h = dy;
-            } else if (selectMode.value === SelectMode.FIXED_SIZE) {
-                let newX = auxMouse.mousemoveX;
-                let newY = auxMouse.mousemoveY;
+            // Moving existing rectangle
+            if (mouseInsideSelection.value) {
+                let newX = auxMouse.initialSelectionX + dx;
+                let newY = auxMouse.initialSelectionY + dy;
 
                 //Snap to edge
                 if (newX < snapRange)
@@ -377,11 +337,78 @@ const mousemoveHandler = function (e: MouseEvent) {
 
                 selectionStore.x = newX;
                 selectionStore.y = newY;
-                selectionStore.w = imgToScreen(fixedSizeWidth.value);
-                selectionStore.h = imgToScreen(fixedSizeHeight.value);
-            }
 
+
+            } else {    // Drawing new rectangle
+                if (selectMode.value === SelectMode.FREE) {
+
+                    // Adjust if selection drawn backwards
+                    if (dx < 0) {
+                        dx = -dx;
+                        x = auxMouse.initialMousedownX - dx
+                    }
+                    if (dy < 0) {
+                        dy = -dy;
+                        y = auxMouse.initialMousedownY - dy
+                    };
+
+                    selectionStore.x = x;
+                    selectionStore.y = y;
+                    selectionStore.w = dx;
+                    selectionStore.h = dy;
+                } else if (selectMode.value === SelectMode.FIXED_RATIO) {
+                    // Aspect ratio of selection ratio
+                    let wRatio = fixedRatioWidth.value / fixedRatioHeight.value;
+
+                    let flipX = dx < 0,
+                        flipY = dy < 0;
+
+                    if (flipX) dx = -dx;
+                    if (flipY) dy = -dy;
+
+                    // Constrain smaller selection dimension to aspect ratio multiple of greater dimension
+                    if (dy * wRatio <= dx)
+                        dx = Math.floor(dy * wRatio);
+                    else if (dx / wRatio <= dy)
+                        dy = Math.floor(dx / wRatio);
+
+                    // Adjust if selection drawn backwards
+                    if (flipX) {
+                        x = auxMouse.initialMousedownX - dx
+                    }
+                    if (flipY) {
+                        y = auxMouse.initialMousedownY - dy;
+                    }
+
+                    selectionStore.x = x;
+                    selectionStore.y = y;
+                    selectionStore.w = dx;
+                    selectionStore.h = dy;
+                } else if (selectMode.value === SelectMode.FIXED_SIZE) {
+                    let newX = auxMouse.mousemoveX;
+                    let newY = auxMouse.mousemoveY;
+
+                    //Snap to edge
+                    if (newX < snapRange)
+                        newX = 0;
+                    if (newY < snapRange)
+                        newY = 0;
+                    if (canvasGroupBb.value.width - (newX + w) < snapRange)
+                        newX = canvasGroupBb.value.width - w;
+                    if (canvasGroupBb.value.height - (newY + h) < snapRange)
+                        newY = canvasGroupBb.value.height - h;
+
+                    selectionStore.x = newX;
+                    selectionStore.y = newY;
+                    selectionStore.w = imgToScreen(fixedSizeWidth.value);
+                    selectionStore.h = imgToScreen(fixedSizeHeight.value);
+                }
+
+            }
         }
+    }   // End "is-mouse-down"
+
+    else {
     }
 };
 
@@ -445,7 +472,7 @@ const createCoordChangeHandler = function (attr: string): Function {
                     </SidebarSection>
                     <SidebarSection>
                         <ToolbarItem>
-                            <div class="w-full grid grid-cols-2 gap-2">
+                            <div class="coords-wrapper w-full grid grid-cols-2 gap-2">
                                 <InputText label="Left" v-model.number="selectionStore.x"
                                     :transform="(val) => screenToImg(val)"></InputText>
                                 <InputText label="Top" v-model.number="selectionStore.y"
@@ -485,9 +512,8 @@ const createCoordChangeHandler = function (attr: string): Function {
                             @resize="onCanvasResize" :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
                             :sourceImageHeight="imageDims.height" :dragging="mouseDoingDragGesture"
                             :fileLoaded="imageFileLoaded" :dataLoaded="imageDataLoaded" :showGridlines="showGridlines"
-                            :setResizing="setResizing"
-                            >
-
+                            :setResizing="setResizing">
+                            <SelectionTooltip></SelectionTooltip>
                             <div :class="{ 'flashing': cropFlashEffect }"
                                 class="crop-flash-overlay w-full h-full pointer-events-none absolute">
                             </div>
@@ -580,10 +606,8 @@ const createCoordChangeHandler = function (attr: string): Function {
     // padding: 50px;
 }
 
-.coords-wrapper {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+.coords-wrapper input {
+    max-width: 75px;
 }
 
 h2 {

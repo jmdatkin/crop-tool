@@ -40,7 +40,7 @@ onMounted(() => {
             </div>
             <div class="image-entry-info flex flex-col flex-grow p-2">
                 <span class="text-sm">Properties</span>
-                <span class="text-zinc-400 tracking-tight">{{ width }}px x {{ height }}px</span>
+                <span class="text-zinc-400 tracking-tight">{{ width }}px × {{ height }}px</span>
             </div>
         </div>
         <div v-else class="image-entry-loading w-full flex justify-center">
