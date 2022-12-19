@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import Spinner from './Spinner.vue';
 
 const props = defineProps<{
@@ -10,33 +10,40 @@ const width = ref(0);
 const height = ref(0);
 
 const imageSrc = ref('');
-const imageObject = ref(document.createElement('img'));
+// const imageObject = ref(document.createElement('img'));
+const imageObject = ref(null);
 
 const imageLoaded = ref(false);
 
 props.image.then(im => {
     imageSrc.value = im;
     imageLoaded.value = true;
-        width.value = imageObject.value.naturalWidth;
-        height.value = imageObject.value.naturalHeight;
+    nextTick(() => {
+        imageObject.value.decode().then(() => {
+            width.value = imageObject.value.naturalWidth;
+            height.value = imageObject.value.naturalHeight;
+        });
+    });
 });
 
+const downloadImage = function() {
+    if (!imageLoaded.value) return;
+    const win = window.open();
+    win.document.write('<iframe src="' + imageSrc.value  + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+};
 
 onMounted(() => {
-    // width.value = imageObject.value.naturalWidth;
-    // height.value = imageObject.value.naturalHeight;
-})
-
-
-
+});
 </script>
 
 <template>
     <div
-        class="image-entry w-full rounded border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 dark:hover:border-zinc-600">
+        class="image-entry w-full rounded border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 dark:hover:border-zinc-600"
+        @click="downloadImage"
+        >
         <div v-if="imageLoaded" class="image-entry-content flex w-full space-x-2">
             <div class="image-entry-thumb bg-zinc-300 dark:bg-zinc-900 rounded-tl rounded-bl">
-                <img class="image-entry-thumb-img" ref="imageObject" :src="imageSrc"/>
+                <img class="image-entry-thumb-img" ref="imageObject" :src="imageSrc" />
             </div>
             <div class="image-entry-info flex flex-col flex-grow p-2">
                 <span class="text-sm">Properties</span>
