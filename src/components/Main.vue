@@ -487,17 +487,20 @@ const createCoordChangeHandler = function (attr: string): Function {
                             <SelectButton v-model="selectMode" :items="selectModeOptions"></SelectButton>
                         </ToolbarItem>
                         <ToolbarItem v-if="selectMode === SelectMode.FIXED_RATIO" title="Ratio">
-                            <div class="flex w-full items-center space-between space-x-2">
-                                <InputText class="flex-grow" v-model.number="fixedRatioWidth"></InputText>
+                            <div class="fixed-ratio-wrapper flex w-full items-center space-x-2">
+                                <InputText v-model.number="fixedRatioWidth"></InputText>
                                 <span>
                                     :
                                 </span>
-                                <InputText class="flex-grow" v-model.number="fixedRatioHeight"></InputText>
+                                <InputText v-model.number="fixedRatioHeight"></InputText>
                             </div>
                         </ToolbarItem>
                         <ToolbarItem v-if="selectMode === SelectMode.FIXED_SIZE" title="Size">
-                            <div class="flex w-full items-center space-x-2">
+                            <div class="fixed-size-wrapper flex w-full items-center space-x-2">
                                 <InputText v-model.number="fixedSizeWidth"></InputText>
+                                <span>
+                                    ×
+                                </span>
                                 <InputText v-model.number="fixedSizeHeight"></InputText>
                             </div>
                         </ToolbarItem>
@@ -606,10 +609,6 @@ const createCoordChangeHandler = function (attr: string): Function {
     // padding: 50px;
 }
 
-.coords-wrapper input {
-    max-width: 75px;
-}
-
 h2 {
     font-size: 48pt;
     margin-bottom: 4rem;
@@ -709,4 +708,12 @@ div.crop-placeholder {
 .coords-wrapper input {
     max-width: 100px;
 }
+
+.coords-wrapper input,
+.fixed-ratio-wrapper input,
+.fixed-size-wrapper input {
+    max-width: 100px;
+}
+
+
 </style>
