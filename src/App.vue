@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { getAuth, onAuthStateChanged } from '@firebase/auth';
 import { inject, provide, readonly, ref } from 'vue';
 import { RouterLink, RouterView } from 'vue-router'
 import AppBar from './components/AppBar.vue'
 import eventBus from './events';
+import { useAuthStore } from './stores/auth';
 
+const authStore = useAuthStore();
 const sidebarOpen = ref(false);
 const darkMode = ref(false);
 
@@ -22,6 +25,12 @@ eventBus.on('toggle-dark-mode', () => {
 provide('sidebar-status', readonly(sidebarOpen));
 provide('dark-mode', { darkMode: readonly(darkMode), updateDarkMode });
 
+onAuthStateChanged(getAuth(), (user) => {
+    if (user)
+        authStore.user = user;
+    else
+        authStore.user = null;
+});
 </script>
 
 <template>
@@ -45,6 +54,12 @@ provide('dark-mode', { darkMode: readonly(darkMode), updateDarkMode });
 .app-wrapper {
   width: 100%;
   height: calc(100% - $app-bar-height);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  @apply dark:bg-zinc-800;
+  @apply dark:text-zinc-50;
+  @apply text-zinc-800;
 }
 
 </style>

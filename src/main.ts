@@ -7,12 +7,19 @@ import { faSquareFull } from '@fortawesome/free-regular-svg-icons';
 import App from './App.vue'
 import router from './router'
 import './index.css';
+import { useAuthStore } from './stores/auth';
 
-const app = createApp(App)
+(async () => {
+    const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
 
+const { signInFromLocalStorage } = useAuthStore();
+
+await signInFromLocalStorage();
+
 library.add(faUpload, faCrop, faMoon, faSun, faLockOpen, faLock, faSquareFull);
 
 app.mount('#app')
+})()
