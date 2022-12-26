@@ -2,7 +2,8 @@ import { useImageStore } from "./stores/images";
 
 const cropImage = function (dataURL, selection): Promise<string> {
     return new Promise((resolve, reject) => {
-        fetch('/api/crop', {
+        // fetch('/api/crop', {
+        fetch('https://us-central1-croppytool.cloudfunctions.net/crop', {
             // fetch('https://croppy.vercel.app/api/crop', {
             method: 'POST',
             body: JSON.stringify({
@@ -13,6 +14,7 @@ const cropImage = function (dataURL, selection): Promise<string> {
                 h: selection.h
             })
         }).then(res => res.text()).then(img => {
+            // console.log(img);
             // let im = new Image();
             // im.src = img;
             // im.decode().then(resolve(im));

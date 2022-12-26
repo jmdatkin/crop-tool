@@ -58,9 +58,6 @@ const onSubmit = function() {
                 <InputText password label="Password" v-model="form.password" :error="validation.password"></InputText>
                 <Button @click.prevent="onSubmit" class="w-full" label="Submit"></Button>
                 </form>
-                <div class="">
-                    Register to save presets
-                </div>
             </div>
         </div>
         <div class="sidebar border-l dark:border-zinc-700" :style="{ 'minWidth': sidebarWidth + 'px' }"></div>

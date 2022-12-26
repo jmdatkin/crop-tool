@@ -16,10 +16,12 @@ export const useAuthStore = defineStore({
     }),
     actions: {
         signInFromLocalStorage() {
+            console.log("Attempting to sign in from local storage");
             return new Promise<void>((resolve, reject) => {
                 onAuthStateChanged(
                     getAuth(firebaseApp),
                     async (user) => {
+                        console.log(user);
                         this.user = user;
                         resolve();
                     },
