@@ -19,11 +19,9 @@ const onInputToggle = function(e: any) {
         <div class="app-bar-sidebar-spacer border-r dark:border-zinc-700" :style="{ 'min-width': sidebarWidth + 'px' }">
         </div>
         <div class="app-bar-items space-x-2">
-            <div class="app-bar-start">
-                <div class="app-bar-item">
+            <div class="app-bar-start flex-grow flex">
+                <div class="app-bar-item flex items-center border-r">
                     <FontAwesomeIcon class="text-slate-700 dark:text-zinc-100" size="xl" icon="fa-solid fa-crop" />
-                </div>
-                <div class="app-bar-item">
                     <span class="app-title text-slate-700 dark:text-zinc-100">Croppy</span>
                 </div>
             </div>
@@ -51,16 +49,17 @@ const onInputToggle = function(e: any) {
     width: 100%;
     justify-content: space-between;
     place-items: center;
-    padding: 5px 0;
+    // padding: 5px 0;
 }
 
 .app-bar-start {
     margin: 0 40px;
 }
 
-.app-bar-items > div {
+.app-bar-items > div > * {
     display: flex;
     place-items: center;
+    @apply p-2;
     // flex-grow: 1;
 }
 

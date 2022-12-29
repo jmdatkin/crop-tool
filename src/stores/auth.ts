@@ -1,33 +1,33 @@
-import { defineStore } from 'pinia'
-import { getAuth, onAuthStateChanged, type User } from 'firebase/auth';
-import { getUser, firebaseApp } from '@/firebase';
+import { defineStore } from "pinia";
+import { getAuth, onAuthStateChanged, signInWithCredential, type User } from "firebase/auth";
+import { getUser, firebaseApp } from "@/firebase";
 
 type UserState = {
-    user: User | null
+    user: User | null;
 };
 
-const authUser = Object.keys(window.localStorage)
-    .filter(item => item.startsWith('firebase:authUser'))[0]
+const authUser = Object.keys(window.localStorage).filter((item) =>
+    item.startsWith("firebase:authUser")
+)[0];
 
 export const useAuthStore = defineStore({
-    id: 'auth',
+    id: "auth",
     state: (): UserState => ({
-        user: null
+        user: null,
     }),
     actions: {
-        signInFromLocalStorage() {
-            console.log("Attempting to sign in from local storage");
-            return new Promise<void>((resolve, reject) => {
+        init() {
+            return new Promise<User | null>((resolve, reject) => {
                 onAuthStateChanged(
                     getAuth(firebaseApp),
-                    async (user) => {
+                    (user) => {
                         console.log(user);
                         this.user = user;
-                        resolve();
+                        resolve(user);
                     },
                     reject
                 );
             });
-        }
-    }
+        },
+    },
 });

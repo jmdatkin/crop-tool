@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { loadFile } from '../file-handler';
-import { provide, reactive, ref, type Ref } from "vue";
+import { provide, reactive, ref, type Ref, computed } from "vue";
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import CanvasGroup from "./Canvas/CanvasGroup.vue";
 import ToolbarItem from "./ToolbarItem.vue";
 import CropPreview from "./CropPreview.vue";
 import { sidebarWidth } from '@/variables';
 import InputText from "./InputText.vue";
+import InputSwitch from "./InputSwitch.vue";
 import Button from "./Button.vue";
 import Rulers from "./Rulers.vue";
 import { useSelectionStore } from "@/stores/selection";
@@ -20,6 +21,18 @@ import Dropdown from './Dropdown.vue';
 import SelectButton from './SelectButton.vue';
 import { SelectMode } from '@/types/SelectModeOptions';
 import SelectionTooltip from './SelectionTooltip.vue';
+import { useAuthStore } from '@/stores/auth';
+import { firebaseApp } from '@/firebase';
+import { getAuth, onAuthStateChanged } from '@firebase/auth';
+import IconButton from './IconButton.vue';
+
+// const user = computed(() => {
+//     return getAuth(firebaseApp).currentUser;
+// });
+// const userRef: Ref<User | null> = ref(null);
+
+// onAuthStateChanged(getAuth(), user => userRef.value = user);
+const authStore = useAuthStore();
 
 const draggingFile = ref(false);
 
@@ -62,6 +75,9 @@ const fixedRatioHeight = ref(1);
 
 const fixedSizeWidth = ref(300);
 const fixedSizeHeight = ref(200);
+
+const outputWidth = ref();
+const outputHeight = ref();
 
 const showGridlines = ref(true);
 
@@ -207,6 +223,10 @@ const dragendHandler = function (e: Event) {
     e.preventDefault();
     draggingFile.value = false;
 };
+
+const clickFileOpen = function() {
+    
+}
 
 
 const auxMouse = reactive({
@@ -438,27 +458,24 @@ const crop = function () {
     doCropFlashEffect();
     const croppedImagePromise = new Promise<string>(resolve => {
         cropImage(imageObject.value?.src, {
-            // x: Math.floor(selectionStore.x / canvasScaleFactor.value),
-            // y: Math.floor(selectionStore.y / canvasScaleFactor.value),
-            // w: Math.floor(selectionStore.w / canvasScaleFactor.value),
-            // h: Math.floor(selectionStore.h / canvasScaleFactor.value)
-            x: screenToImg(selectionStore.x),
-            y: screenToImg(selectionStore.y),
-            w: screenToImg(selectionStore.w),
-            h: screenToImg(selectionStore.h)
+            left: screenToImg(selectionStore.x),
+            top: screenToImg(selectionStore.y),
+            width: screenToImg(selectionStore.w),
+            height: screenToImg(selectionStore.h),
+            outputWidth: outputWidth.value,
+            outputHeight: outputHeight.value,
         }).then(im => resolve(im));
     });
     images.value.push(croppedImagePromise);
 };
-
-const createCoordChangeHandler = function (attr: string): Function {
-    console.log(attr);
-    return (value: number) => selectionStore[attr] = imgToScreen(value);
-};
-
 </script>
 
 <template>
+    <Teleport to=".app-bar-start">
+        <div class="app-bar-item">
+            <IconButton @click="" icon="fa-regular fa-folder-open"></IconButton>
+        </div>
+    </Teleport>
     <div class="main-view bg-gray-50 dark:bg-zinc-800 dark:text-zinc-50">
         <div class="main-wrapper h-full w-full">
             <div class="sidebar hidden lg:block sidebar-left border-r flex flex-col items-start space-y-6 bg-white dark:bg-zinc-800 dark:border-zinc-700"
@@ -503,6 +520,22 @@ const createCoordChangeHandler = function (attr: string): Function {
                                 </span>
                                 <InputText v-model.number="fixedSizeHeight"></InputText>
                             </div>
+                        </ToolbarItem>
+                    </SidebarSection>
+                    <SidebarSection>
+                        <ToolbarItem>
+                            <div class="fixed-size-wrapper flex w-full items-center space-x-2">
+                                <InputText v-model.number="outputWidth"></InputText>
+                                <span>
+                                    ×
+                                </span>
+                                <InputText v-model.number="outputHeight"></InputText>
+                            </div>
+                        </ToolbarItem>
+                    </SidebarSection>
+                    <SidebarSection>
+                        <ToolbarItem>
+                            <InputSwitch label="Show Gridlines" v-model="showGridlines"></InputSwitch>
                         </ToolbarItem>
                     </SidebarSection>
                 </div>
@@ -552,6 +585,8 @@ const createCoordChangeHandler = function (attr: string): Function {
                         <CropPreview :sourceImage="imageObject" :sourceImageWidth="imageDims.width"
                             :sourceImageHeight="imageDims.height" :scaleFactor="canvasScaleFactor"></CropPreview>
                     </ToolbarItem> -->
+                    <!-- {{  userRef }} -->
+                    {{  authStore.user }}
                     <SidebarSection class="border-b">
                         <Button class="w-full" label="Crop" @click="crop"></Button>
                     </SidebarSection>
@@ -594,6 +629,10 @@ const createCoordChangeHandler = function (attr: string): Function {
 .sidebar .sidebar-section {
     @apply p-6;
 }
+
+.sidebar .sidebar-section:not(:last-of-type) {
+    @apply border-b;
+} 
 
 .content-wrapper {
     width: 100%;

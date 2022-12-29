@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faUpload, faCrop, faMoon, faSun, faLockOpen, faLock } from '@fortawesome/free-solid-svg-icons'
+import { faUpload, faCrop, faMoon, faSun, faLockOpen, faLock, faFolderOpen } from '@fortawesome/free-solid-svg-icons'
 import { faSquareFull } from '@fortawesome/free-regular-svg-icons';
 
 import App from './App.vue'
@@ -10,16 +10,16 @@ import './index.css';
 import { useAuthStore } from './stores/auth';
 
 (async () => {
-    const app = createApp(App)
+const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
 
-const { signInFromLocalStorage } = useAuthStore();
+// const { signInFromLocalStorage } = useAuthStore();
 
-await signInFromLocalStorage();
+// await signInFromLocalStorage();
 
-library.add(faUpload, faCrop, faMoon, faSun, faLockOpen, faLock, faSquareFull);
+library.add(faUpload, faCrop, faMoon, faSun, faLockOpen, faLock, faSquareFull, faFolderOpen);
 
 app.mount('#app')
 })()

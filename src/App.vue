@@ -4,6 +4,7 @@ import { inject, provide, readonly, ref } from 'vue';
 import { RouterLink, RouterView } from 'vue-router'
 import AppBar from './components/AppBar.vue'
 import eventBus from './events';
+import { firebaseApp } from './firebase';
 import { useAuthStore } from './stores/auth';
 
 const authStore = useAuthStore();
@@ -25,12 +26,14 @@ eventBus.on('toggle-dark-mode', () => {
 provide('sidebar-status', readonly(sidebarOpen));
 provide('dark-mode', { darkMode: readonly(darkMode), updateDarkMode });
 
-onAuthStateChanged(getAuth(), (user) => {
-    if (user)
-        authStore.user = user;
-    else
-        authStore.user = null;
-});
+// onAuthStateChanged(getAuth(), (user) => {
+//     if (user)
+//         authStore.user = user;
+//     else
+//         authStore.user = null;
+// });
+// setTimeout(() => authStore.init(), 2000);
+authStore.init();
 </script>
 
 <template>

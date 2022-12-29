@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { browserLocalPersistence, getAuth, initializeAuth, setPersistence } from "firebase/auth";
+import { browserLocalPersistence, browserSessionPersistence, getAuth, initializeAuth, setPersistence } from "firebase/auth";
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, type Auth } from "firebase/auth";
 import { useAuthStore } from "./stores/auth";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -21,7 +21,9 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = initializeAuth(app);
-setPersistence(auth, browserLocalPersistence);
+setPersistence(auth, browserLocalPersistence)
+
+// .then(() => onAuthStateChanged(auth, console.log));
 // const analytics = getAnalytics(app);
 
 const anonSignIn = function () {
@@ -31,7 +33,7 @@ const anonSignIn = function () {
 const register = function (email: string, password: string) {
     return createUserWithEmailAndPassword(auth as Auth, email, password);
 };
-
+0
 const signIn = function (email: string, password: string) {
     return signInWithEmailAndPassword(auth as Auth, email, password);
 };
