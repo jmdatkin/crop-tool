@@ -35,6 +35,7 @@ import IconButton from './IconButton.vue';
 const authStore = useAuthStore();
 
 const draggingFile = ref(false);
+const fileChooserRef = ref();
 
 const drawingSelection = ref(false);
 const draggingSelection = ref(false);
@@ -175,7 +176,7 @@ const loadImageObject = function (dataUrl: string): void {
 };
 
 
-const fileUploadHandler = function (e: Event) {
+const fileHandler = function (e: Event) {
     let files = e.target.files;
 
     if (files[0]) {
@@ -224,10 +225,9 @@ const dragendHandler = function (e: Event) {
     draggingFile.value = false;
 };
 
-const clickFileOpen = function() {
-    
-}
-
+const openFileDialog = function () {
+    fileChooserRef.value.click();
+};
 
 const auxMouse = reactive({
     initialMousedownX: 0,
@@ -473,9 +473,10 @@ const crop = function () {
 <template>
     <Teleport to=".app-bar-start">
         <div class="app-bar-item">
-            <IconButton @click="" icon="fa-regular fa-folder-open"></IconButton>
+            <IconButton @click="openFileDialog" icon="fa-regular fa-folder-open"></IconButton>
         </div>
     </Teleport>
+    <input @change="fileHandler" ref="fileChooserRef" type="file" class="hidden" />
     <div class="main-view bg-gray-50 dark:bg-zinc-800 dark:text-zinc-50">
         <div class="main-wrapper h-full w-full">
             <div class="sidebar hidden lg:block sidebar-left border-r flex flex-col items-start space-y-6 bg-white dark:bg-zinc-800 dark:border-zinc-700"
@@ -554,27 +555,27 @@ const crop = function () {
                                 class="crop-flash-overlay w-full h-full pointer-events-none absolute">
                             </div>
                         </CanvasGroup>
-                        <FileChooser v-else :onFileSelect="fileUploadHandler">
-                            <template v-slot="{ doClick }">
-                                <div class="canvas-placeholder hover:cursor-pointer hover:text-zinc-300"
-                                    @click="doClick">
-                                    <div class="crop-placeholder"></div>
-                                    <h2 class="text-zinc-400 tracking-tight" :class="{ 'dragging': draggingFile }">Drag
-                                        an
-                                        image
-                                    </h2>
-                                    <span class="upload-icon" v-if="draggingFile"
-                                        :class="{ 'upload-icon-dragging': draggingFile }">
-                                        <FontAwesomeIcon class="text-gray-500" icon="fa-solid fa-upload" size="6x">
-                                        </FontAwesomeIcon>
-                                    </span>
-                                    <h2 class="text-zinc-400 tracking-tight" v-else @click="doClick"
-                                        :class="{ 'dragging': draggingFile }">
-                                        or click to select file
-                                    </h2>
-                                </div>
-                            </template>
-                        </FileChooser>
+                        <!-- <FileChooser v-else :onFileSelect="fileHandler">
+                            <template v-slot="{ doClick }"> -->
+                        <div v-else class="canvas-placeholder hover:cursor-pointer hover:text-zinc-300"
+                            @click="openFileDialog">
+                            <div class="crop-placeholder"></div>
+                            <h2 class="text-zinc-400 tracking-tight" :class="{ 'dragging': draggingFile }">Drag
+                                an
+                                image
+                            </h2>
+                            <span class="upload-icon" v-if="draggingFile"
+                                :class="{ 'upload-icon-dragging': draggingFile }">
+                                <FontAwesomeIcon class="text-gray-500" icon="fa-solid fa-upload" size="6x">
+                                </FontAwesomeIcon>
+                            </span>
+                            <h2 class="text-zinc-400 tracking-tight" v-else @click="openFileDialog"
+                                :class="{ 'dragging': draggingFile }">
+                                or click to select file
+                            </h2>
+                        </div>
+                        <!-- </template>
+                        </FileChooser> -->
                     </div>
                 </Rulers>
             </div>
@@ -586,7 +587,7 @@ const crop = function () {
                             :sourceImageHeight="imageDims.height" :scaleFactor="canvasScaleFactor"></CropPreview>
                     </ToolbarItem> -->
                     <!-- {{  userRef }} -->
-                    {{  authStore.user }}
+                    {{ authStore.user }}
                     <SidebarSection class="border-b">
                         <Button class="w-full" label="Crop" @click="crop"></Button>
                     </SidebarSection>
@@ -632,7 +633,7 @@ const crop = function () {
 
 .sidebar .sidebar-section:not(:last-of-type) {
     @apply border-b;
-} 
+}
 
 .content-wrapper {
     width: 100%;
@@ -753,6 +754,4 @@ div.crop-placeholder {
 .fixed-size-wrapper input {
     max-width: 100px;
 }
-
-
 </style>
